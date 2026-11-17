@@ -113,7 +113,6 @@ const ICONS = {
   const form = document.getElementById('contactForm');
   const err = document.getElementById('formError');
   const gmail = document.getElementById('sendGmail');
-  const mailApp = document.getElementById('sendMail');
   const f = form.elements;
 
   function compose() {
@@ -130,7 +129,6 @@ const ICONS = {
     const su = encodeURIComponent(subject);
     const bo = encodeURIComponent(body);
     gmail.href = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + to + '&su=' + su + '&body=' + bo;
-    mailApp.href = 'mailto:' + CONTACT.email + '?subject=' + su + '&body=' + bo;
   }
 
   function validate() {
@@ -145,11 +143,9 @@ const ICONS = {
     return ok;
   }
 
-  [gmail, mailApp].forEach((a) => {
-    a.addEventListener('click', (e) => {
-      if (!validate()) { e.preventDefault(); return; }
-      compose();
-    });
+  gmail.addEventListener('click', (e) => {
+    if (!validate()) { e.preventDefault(); return; }
+    compose();
   });
   form.addEventListener('submit', (e) => { e.preventDefault(); validate(); });
   form.addEventListener('input', (e) => {
