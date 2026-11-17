@@ -20,7 +20,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&family=Noto+Serif+JP:wght@700&family=Noto+Serif+TC:wght@700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
+<script>/* 上次選日文的訪客，一打開就顯示日文，不先閃一下中文 */try{if(localStorage.getItem('mark-lang')==='ja'){document.documentElement.dataset.lang='ja';document.documentElement.lang='ja';}}catch(e){}</script>
 </head>
 <body>
 
@@ -33,7 +34,7 @@
       <a href="#service">Service</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
-      <button type="button" class="lang" id="langBtn" aria-label="Language">
+      <button type="button" class="lang" id="langBtn">
         <span data-l="zh">日本語</span><span data-l="ja">中文</span>
       </button>
     </nav>
@@ -81,7 +82,7 @@
     </header>
     <!-- 第一排：無塵室　第二排：研究室 -->
     <div class="grid">
-      <button class="cell" data-full="images/discovery-1.jpg"><img src="images/thumb/discovery-1.jpg" decoding="async" fetchpriority="high" alt="攝影團隊在無塵設施外拍攝身穿無塵衣的工作人員" style="--x:50%"></button>
+      <button class="cell" data-full="images/discovery-1.jpg"><img src="images/thumb/discovery-1.jpg" loading="lazy" decoding="async" alt="攝影團隊在無塵設施外拍攝身穿無塵衣的工作人員" style="--x:50%"></button>
       <button class="cell" data-full="images/discovery-2.jpg"><img src="images/thumb/discovery-2.jpg" loading="lazy" decoding="async" alt="身穿無塵衣、手持攝影機的拍攝團隊" style="--x:8%"></button>
       <button class="cell" data-full="images/discovery-3.jpg"><img src="images/thumb/discovery-3.jpg" loading="lazy" decoding="async" alt="在無塵室內拍攝研究人員操作儀器" style="--x:50%"></button>
       <button class="cell" data-full="images/discovery-4.jpg"><img src="images/thumb/discovery-4.jpg" loading="lazy" decoding="async" alt="研究室內拍攝實驗作業" style="--x:50%"></button>
@@ -266,13 +267,13 @@
 
   <form class="form" id="contactForm" novalidate>
     <label for="f-name"><span data-l="zh">姓名／公司</span><span data-l="ja">お名前／会社名</span> <b>*</b></label>
-    <input id="f-name" name="name" type="text" required autocomplete="name" data-ph-zh="您的姓名" data-ph-ja="お名前">
+    <input id="f-name" aria-describedby="formError" name="name" type="text" required autocomplete="name" data-ph-zh="您的姓名" data-ph-ja="お名前">
 
     <label for="f-email">Email <b>*</b></label>
-    <input id="f-email" name="email" type="email" required autocomplete="email" placeholder="Email Address">
+    <input id="f-email" aria-describedby="formError" name="email" type="email" required autocomplete="email" placeholder="Email Address">
 
     <label for="f-msg"><span data-l="zh">訊息</span><span data-l="ja">メッセージ</span> <b>*</b></label>
-    <textarea id="f-msg" name="message" required data-ph-zh="想拍的內容、預計時間、地點等" data-ph-ja="撮影内容、時期、場所など"></textarea>
+    <textarea id="f-msg" aria-describedby="formError" name="message" required data-ph-zh="想拍的內容、預計時間、地點等" data-ph-ja="撮影内容、時期、場所など"></textarea>
 
     <p class="form-error" id="formError" role="alert" hidden>
       <span data-l="zh">請填寫標有 * 的欄位，並確認 Email 格式。</span>
@@ -290,6 +291,7 @@
       <span data-l="zh">也可以直接寄信到</span><span data-l="ja">直接メールする場合：</span>
       <b class="mail-text"></b>
       <button type="button" class="copy-mail"><span data-l="zh">複製</span><span data-l="ja">コピー</span></button>
+      <span class="sr-only" id="copyStatus" role="status"></span>
     </p>
   </form>
 </section>
@@ -306,7 +308,7 @@
   <span class="fab-text" aria-hidden="true"><span data-l="zh">聯絡</span><span data-l="ja">連絡</span></span>
 </a>
 
-<div class="lightbox" id="lightbox" aria-hidden="true">
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="放大檢視照片" aria-hidden="true">
   <button type="button" class="lb-close" aria-label="Close">×</button>
   <button type="button" class="lb-nav lb-prev" aria-label="Previous photo">‹</button>
   <img alt="">
@@ -315,6 +317,6 @@
   <video controls playsinline></video>
 </div>
 
-<script src="main.js?v=8"></script>
+<script src="main.js?v=9"></script>
 </body>
 </html>

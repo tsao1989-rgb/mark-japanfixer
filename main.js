@@ -23,7 +23,6 @@ const ICONS = {
 /* ========================================================= */
 (function () {
   const root = document.documentElement;
-  root.classList.add('js');
 
   /* ---------- language ---------- */
   const TITLES = {
@@ -37,6 +36,16 @@ const ICONS = {
     document.title = TITLES[lang];
     const fabEl = document.getElementById('fab');
     if (fabEl) fabEl.setAttribute('aria-label', lang === 'ja' ? 'お問い合わせ' : '聯絡我');
+    const L = lang === 'ja'
+      ? { close: '閉じる', prev: '前の写真', next: '次の写真', dialog: '写真を拡大表示' }
+      : { close: '關閉', prev: '上一張', next: '下一張', dialog: '放大檢視照片' };
+    const lbEl = document.getElementById('lightbox');
+    if (lbEl) {
+      lbEl.setAttribute('aria-label', L.dialog);
+      lbEl.querySelector('.lb-close').setAttribute('aria-label', L.close);
+      lbEl.querySelector('.lb-prev').setAttribute('aria-label', L.prev);
+      lbEl.querySelector('.lb-next').setAttribute('aria-label', L.next);
+    }
     document.querySelectorAll('[data-ph-zh]').forEach((el) => {
       el.placeholder = el.dataset[lang === 'ja' ? 'phJa' : 'phZh'];
     });
@@ -44,10 +53,16 @@ const ICONS = {
   }
   document.getElementById('langBtn').addEventListener('click', () => {
     setLang(root.dataset.lang === 'ja' ? 'zh' : 'ja');
+    compose();
   });
   let saved = null;
   try { saved = localStorage.getItem('mark-lang'); } catch (e) {}
   setLang(saved || 'zh');
+
+  /* 疊層打開時，讓背後的內容暫時無法被鍵盤或螢幕閱讀器操作 */
+  function setInert(els, on) {
+    els.forEach((el) => { if (el) { el.inert = on; if (on) el.setAttribute('aria-hidden', 'true'); else el.removeAttribute('aria-hidden'); } });
+  }
 
   /* ---------- 手機版選單 ---------- */
   const menuBtn = document.getElementById('menuBtn');
@@ -56,7 +71,13 @@ const ICONS = {
     menuBtn.setAttribute('aria-expanded', String(open));
     menuBtn.textContent = open ? 'Close' : 'Menu';
     document.body.style.overflow = open ? 'hidden' : '';
+    setInert([document.querySelector('main'), document.querySelector('footer'), document.getElementById('fab')], open);
+    if (open) { const first = document.querySelector('#siteNav a'); if (first) first.focus({ preventScroll: true }); }
   }
+  // 選單開著時把手機轉成橫向（或視窗拉寬）會失去 Close 按鈕，所以自動關掉
+  const phone = window.matchMedia('(max-width: 640px)');
+  const onPhoneChange = (e) => { if (!e.matches && document.body.classList.contains('menu-open')) setMenu(false); };
+  if (phone.addEventListener) phone.addEventListener('change', onPhoneChange); else phone.addListener(onPhoneChange);
   menuBtn.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
   document.querySelectorAll('.nav a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
   document.addEventListener('keydown', (e) => {
@@ -68,26 +89,7 @@ const ICONS = {
   if (fab && 'IntersectionObserver' in window) {
     let pastHero = false;
     let atContact = false;
-    // 停下來時，如果按鈕底下有文字或照片，就滑進右側留白，只露出一角，不擋內容
-    const BLOCK = 'p, h1, h2, h3, li, dt, dd, img, video, label, input, textarea, .send';
-    const underFab = () => {
-      const cs = getComputedStyle(fab);
-      const size = fab.offsetWidth;
-      const l = innerWidth - parseFloat(cs.right) - size;
-      const t = innerHeight - parseFloat(cs.bottom) - size;
-      const pts = [[l + size / 2, t + size / 2], [l + 6, t + 6], [l + size - 6, t + 6], [l + 6, t + size - 6], [l + size - 6, t + size - 6]];
-      return pts.some(([x, y]) => document.elementsFromPoint(x, y)
-        .some((el) => el !== fab && !fab.contains(el) && el.matches(BLOCK)));
-    };
-    const settle = () => fab.classList.toggle('tucked', fab.classList.contains('show') && underFab());
-    let idle = null;
-    addEventListener('scroll', () => {
-      fab.classList.remove('tucked');          // 捲動時完整跟著畫面
-      clearTimeout(idle);
-      idle = setTimeout(settle, 180);          // 停下 0.18 秒後判斷要不要收進邊緣
-    }, { passive: true });
-    addEventListener('resize', settle);
-    const update = () => { fab.classList.toggle('show', pastHero && !atContact); settle(); };
+    const update = () => fab.classList.toggle('show', pastHero && !atContact);
     new IntersectionObserver(([e]) => { pastHero = !e.isIntersecting; update(); })
       .observe(document.querySelector('.hero'));
     new IntersectionObserver(([e]) => { atContact = e.isIntersecting; update(); }, { rootMargin: '0px 0px -34% 0px' })
@@ -105,7 +107,7 @@ const ICONS = {
     const li = document.createElement('li');
     const el = document.createElement(s.url ? 'a' : 'span');
     if (s.url) { el.href = s.url; el.target = '_blank'; el.rel = 'noopener'; }
-    el.setAttribute('aria-label', s.type);
+    el.setAttribute('aria-label', s.type.charAt(0).toUpperCase() + s.type.slice(1));
     el.title = s.type;
     el.innerHTML = ICONS[s.type];
     li.appendChild(el);
@@ -113,6 +115,7 @@ const ICONS = {
   });
 
   /* ---------- 作品照片：下載完成才淡入，不會一格一格跳出來 ---------- */
+  root.classList.add('js');   // 放在這裡：前面任何一段出錯，內容也不會被隱藏
   document.querySelectorAll('.cell img').forEach((img) => {
     const done = () => img.classList.add('loaded');
     if (img.complete && img.naturalWidth) done();
@@ -172,16 +175,21 @@ const ICONS = {
       p.src = set[(j + set.length) % set.length].dataset.full;
     });
   }
+  const behind = () => [document.querySelector('header'), document.querySelector('main'), document.querySelector('footer'), document.getElementById('fab')];
   function openLb() {
     clearTimeout(closeTimer);
     lastFocus = document.activeElement;
     lb.classList.add('open');
     lb.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    setInert(behind(), true);
     lb.querySelector('.lb-close').focus({ preventScroll: true });
+    // 手機按「返回」時關掉放大檢視，而不是離開網站
+    try { history.pushState({ lightbox: true }, ''); } catch (e) {}
   }
   function openGallery(cell) {
     set = [...cell.closest('.grid').querySelectorAll('.cell[data-full]')];
+    lbVideo.pause(); lbVideo.removeAttribute('src'); lbVideo.load();   // 剛關掉影片又馬上開照片時，不留下影片
     lb.classList.add('is-gallery');
     lbImg.removeAttribute('src');
     show(set.indexOf(cell));
@@ -196,13 +204,15 @@ const ICONS = {
     openLb();
   }
   function isOpen() { return lb.classList.contains('open'); }
-  function closeLb() {
+  function closeLb(fromHistory) {
     if (!isOpen()) return;
     token++;
     lb.classList.remove('open');
     lb.setAttribute('aria-hidden', 'true');
     lbVideo.pause();
     document.body.style.overflow = '';
+    setInert(behind(), false);
+    if (fromHistory !== true && history.state && history.state.lightbox) { try { history.back(); } catch (e) {} }
     if (lastFocus) lastFocus.focus({ preventScroll: true });
     closeTimer = setTimeout(() => {   // 等淡出結束再清掉內容
       lb.classList.remove('is-gallery');
@@ -219,7 +229,8 @@ const ICONS = {
   });
   lb.querySelector('.lb-prev').addEventListener('click', () => show(idx - 1, -1));
   lb.querySelector('.lb-next').addEventListener('click', () => show(idx + 1, 1));
-  lb.querySelector('.lb-close').addEventListener('click', closeLb);
+  lb.querySelector('.lb-close').addEventListener('click', () => closeLb());
+  window.addEventListener('popstate', () => closeLb(true));
   lb.addEventListener('click', (e) => { if (e.target === lb) closeLb(); });   // 點黑色背景關閉
   document.addEventListener('keydown', (e) => {
     if (!isOpen()) return;
@@ -230,8 +241,10 @@ const ICONS = {
 
   // 手機：照片跟著手指移動，放開後超過門檻就換下一張，否則彈回原位
   let startX = null, startY = null, dx = 0, horizontal = null;
+  const resetDrag = () => { startX = null; lbImg.classList.remove('dragging'); lbImg.style.transform = ''; };
+  lb.addEventListener('touchcancel', resetDrag);
   lb.addEventListener('touchstart', (e) => {
-    if (!set.length || e.touches.length > 1) { startX = null; return; }
+    if (!set.length || e.touches.length > 1) { resetDrag(); return; }
     startX = e.touches[0].clientX; startY = e.touches[0].clientY; dx = 0; horizontal = null;
   }, { passive: true });
   lb.addEventListener('touchmove', (e) => {
@@ -271,15 +284,25 @@ const ICONS = {
     const to = encodeURIComponent(CONTACT.email);
     const su = encodeURIComponent(subject);
     const bo = encodeURIComponent(body);
-    gmail.href = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + to + '&su=' + su + '&body=' + bo;
+    // 表單還沒填好時不放真正的連結，避免長按「在新分頁開啟」打開空白信件
+    gmail.href = isComplete() ? 'https://mail.google.com/mail/?view=cm&fs=1&to=' + to + '&su=' + su + '&body=' + bo : '#';
+  }
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  function isComplete() {
+    return [f.name, f.email, f.message].every((el) => {
+      const v = el.value.trim();
+      return v && (el.type !== 'email' || EMAIL_RE.test(v));
+    });
   }
 
   function validate() {
     let ok = true;
     [f.name, f.email, f.message].forEach((el) => {
       const v = el.value.trim();
-      const bad = !v || (el.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+      const bad = !v || (el.type === 'email' && !EMAIL_RE.test(v));
       el.classList.toggle('invalid', bad);
+      el.setAttribute('aria-invalid', String(bad));
       if (bad && ok) { el.focus(); ok = false; }
     });
     err.hidden = ok;
@@ -290,10 +313,15 @@ const ICONS = {
     if (!validate()) { e.preventDefault(); return; }
     compose();
   });
-  form.addEventListener('submit', (e) => { e.preventDefault(); validate(); });
+  // 在輸入框按 Enter：填好了就直接打開 Gmail 寄信畫面
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (validate()) { compose(); gmail.click(); }
+  });
   form.addEventListener('input', (e) => {
-    if (e.target.classList) e.target.classList.remove('invalid');
+    if (e.target.classList) { e.target.classList.remove('invalid'); e.target.removeAttribute('aria-invalid'); }
     compose();
+    if (!err.hidden && isComplete()) err.hidden = true;
   });
   compose();
 
@@ -302,6 +330,8 @@ const ICONS = {
   document.querySelectorAll('.copy-mail').forEach((btn) => {
     btn.addEventListener('click', () => {
       const done = () => {
+        const st = document.getElementById('copyStatus');
+        if (st) st.textContent = root.dataset.lang === 'ja' ? 'コピーしました' : '已複製';
         btn.classList.add('copied');
         setTimeout(() => btn.classList.remove('copied'), 2000);
       };
@@ -309,6 +339,7 @@ const ICONS = {
         const t = btn.parentElement.querySelector('.mail-text');
         const r = document.createRange(); r.selectNodeContents(t);
         const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        try { if (document.execCommand('copy')) done(); } catch (e3) {}
       };
       try {
         navigator.clipboard.writeText(CONTACT.email).then(done, fallback);
