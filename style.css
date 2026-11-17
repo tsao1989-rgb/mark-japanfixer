@@ -35,6 +35,7 @@
   --t-h2: 89px;
   --t-h1: 144px;
 
+  --ease: cubic-bezier(.22, .61, .36, 1);   /* 所有動態共用的緩動：起步快、收尾柔 */
   --side: var(--s5);   /* 頁面左右留白 */
   --gap: var(--s5);    /* 欄距 */
 }
@@ -46,7 +47,8 @@ html[data-lang="zh"] [data-l="ja"],
 html[data-lang="ja"] [data-l="zh"] { display: none !important; }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; }
+* { -webkit-tap-highlight-color: transparent; }
 body {
   margin: 0; background: var(--bg); color: var(--blue);
   font-family: var(--sans); font-weight: 300; font-size: var(--t-body); line-height: 2;
@@ -104,9 +106,13 @@ button { font: inherit; color: inherit; letter-spacing: inherit; background: non
 .cell img {
   width: 100%; height: 100%; object-fit: cover;
   object-position: var(--x, 50%) var(--y, 50%);
-  transition: opacity .3s;
+  transition: opacity .6s var(--ease), scale .9s var(--ease);
 }
-.cell:hover img { opacity: .85; }
+.js .cell img { opacity: 0; }
+.js .cell img.loaded { opacity: 1; }
+@media (hover: hover) {
+  .cell:hover img { scale: 1.04; }
+}
 /* 影片劇照：放大並對齊上緣，把畫面下方的字幕裁掉 */
 .cell img.still { transform: scale(var(--z, 1.3)); transform-origin: var(--x, 50%) 0%; }
 
@@ -217,13 +223,25 @@ button { font: inherit; color: inherit; letter-spacing: inherit; background: non
 .site-footer { padding: var(--s7) var(--side); text-align: center; font-size: 14px; color: var(--gray); }
 
 /* ---------- lightbox ---------- */
-.lightbox { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: rgba(0, 0, 0, .92); padding: var(--s6) var(--s7); }
-.lightbox[hidden] { display: none; }
+.lightbox {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
+  background: rgba(0, 0, 0, .92); padding: var(--s6) var(--s7);
+  opacity: 0; visibility: hidden; transition: opacity .35s var(--ease), visibility .35s;
+  overscroll-behavior: contain; touch-action: pinch-zoom;
+}
+.lightbox.open { opacity: 1; visibility: visible; }
 .lightbox img, .lightbox video { max-width: 100%; max-height: 90vh; }
 .lightbox img:not([src]), .lightbox video:not([src]) { display: none; }
 .lightbox video { cursor: default; }
 .lb-close { position: absolute; top: var(--s2); right: var(--s3); z-index: 2; width: 44px; height: 44px; color: #fff; font-size: 34px; line-height: 1; }
-.lightbox img { user-select: none; -webkit-user-select: none; }
+.lightbox img {
+  user-select: none; -webkit-user-select: none; -webkit-user-drag: none;
+  transition: opacity .25s var(--ease), transform .4s var(--ease);
+  will-change: transform, opacity;
+}
+.lightbox img.is-loading { opacity: 0; }
+.lightbox img.dragging { transition: none; }
+.lightbox:not(.open) img { transform: scale(.97); }
 .lb-nav {
   display: none; position: absolute; top: 50%; z-index: 2; transform: translateY(-50%);
   width: var(--s6); height: var(--s7); place-items: center;
@@ -240,11 +258,12 @@ button { font: inherit; color: inherit; letter-spacing: inherit; background: non
 .lightbox:not(.is-gallery) .lb-count { display: none; }
 
 /* ---------- reveal ---------- */
-.js .reveal { opacity: 0; transform: translateY(16px); transition: opacity .8s ease, transform .8s ease; }
+.js .reveal { opacity: 0; transform: translateY(var(--s3)); transition: opacity .9s var(--ease), transform .9s var(--ease); }
 .js .reveal.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .js .reveal { opacity: 1; transform: none; transition: none; }
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
 
 /* ---------- responsive：每縮一段，間距各降一級 ---------- */
@@ -279,6 +298,13 @@ button { font: inherit; color: inherit; letter-spacing: inherit; background: non
     opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s;
   }
   .menu-open .nav { opacity: 1; visibility: visible; }
+  .nav a, .lang { opacity: 0; transform: translateY(var(--s2)); transition: opacity .5s var(--ease), transform .5s var(--ease); }
+  .menu-open .nav a, .menu-open .lang { opacity: 1; transform: none; }
+  .menu-open .nav > :nth-child(2) { transition-delay: .04s; }
+  .menu-open .nav > :nth-child(3) { transition-delay: .08s; }
+  .menu-open .nav > :nth-child(4) { transition-delay: .12s; }
+  .menu-open .nav > :nth-child(5) { transition-delay: .16s; }
+  .menu-open .nav > :nth-child(6) { transition-delay: .2s; }
   .nav a { font-family: var(--serif); font-weight: 700; font-size: var(--s4); line-height: 1.3; padding: var(--s1) 0; }
   .lang { margin-top: var(--s4); padding: var(--s1) 0; font-size: 15px; }
 
@@ -300,7 +326,8 @@ button { font: inherit; color: inherit; letter-spacing: inherit; background: non
     scrollbar-width: none;
   }
   .project .grid::-webkit-scrollbar { display: none; }
-  .project .cell { flex: 0 0 calc(100% - var(--s4)); scroll-snap-align: start; }  /* 下一張露出 55px */
+  .project .grid { overscroll-behavior-x: contain; }
+  .project .cell { flex: 0 0 calc(100% - var(--s4)); scroll-snap-align: start; scroll-snap-stop: always; }  /* 下一張露出 55px */
 
   /* 各區塊 */
   .awards { padding-top: var(--s7); }

@@ -79,6 +79,13 @@ const ICONS = {
     social.appendChild(li);
   });
 
+  /* ---------- 作品照片：下載完成才淡入，不會一格一格跳出來 ---------- */
+  document.querySelectorAll('.cell img').forEach((img) => {
+    const done = () => img.classList.add('loaded');
+    if (img.complete && img.naturalWidth) done();
+    else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', done, { once: true }); }
+  });
+
   /* ---------- reveal on scroll ---------- */
   const reveals = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {
@@ -86,13 +93,13 @@ const ICONS = {
       entries.forEach((e) => {
         if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
       });
-    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.02 });
+    }, { rootMargin: '0px 0px 8% 0px', threshold: 0 });
     reveals.forEach((el) => io.observe(el));
   } else {
     reveals.forEach((el) => el.classList.add('in'));
   }
 
-  /* ---------- lightbox：同一個案子的照片可直接左右切換（‹ › 按鈕、鍵盤 ← →、手機左右滑） ---------- */
+  /* ---------- lightbox：淡入淡出；同一案子的照片可左右切換（‹ ›、← →、手機跟手滑動） ---------- */
   const lb = document.getElementById('lightbox');
   const lbImg = lb.querySelector('img');
   const lbVideo = lb.querySelector('video');
@@ -100,46 +107,76 @@ const ICONS = {
   let lastFocus = null;
   let set = [];
   let idx = 0;
+  let token = 0;
+  let closeTimer = null;
 
-  function show(i) {
+  function show(i, dir = 0) {
+    if (!set.length) return;
     idx = (i + set.length) % set.length;
     const cell = set[idx];
-    lbImg.src = cell.dataset.full;
-    lbImg.alt = cell.querySelector('img').alt;
+    const thumb = cell.querySelector('img');
+    const full = cell.dataset.full;
+    const t = ++token;
     lbCount.textContent = (idx + 1) + ' / ' + set.length;
-    // 先載入前後兩張，切換時不用等
+    // 1) 立刻用已載入的預覽圖顯示，從滑動的方向滑進來，不必等下載
+    lbImg.classList.add('dragging', 'is-loading');
+    lbImg.style.transform = dir ? 'translateX(' + (dir * 55) + 'px)' : '';
+    lbImg.src = thumb.currentSrc || thumb.src;
+    lbImg.alt = thumb.alt;
+    void lbImg.offsetWidth;
+    lbImg.classList.remove('dragging', 'is-loading');
+    lbImg.style.transform = '';
+    // 2) 高畫質原圖解碼完成後無縫換上
+    const pre = new Image();
+    const upgrade = () => { if (t === token) lbImg.src = full; };
+    pre.onload = upgrade;
+    pre.onerror = upgrade;
+    pre.src = full;
+    if (pre.complete && pre.naturalWidth) upgrade();
+    // 3) 先載入前後兩張原圖，切換時更順
     [idx + 1, idx - 1].forEach((j) => {
-      const pre = new Image();
-      pre.src = set[(j + set.length) % set.length].dataset.full;
+      const p = new Image();
+      p.src = set[(j + set.length) % set.length].dataset.full;
     });
   }
   function openLb() {
+    clearTimeout(closeTimer);
     lastFocus = document.activeElement;
-    lb.hidden = false;
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    lb.querySelector('.lb-close').focus();
+    lb.querySelector('.lb-close').focus({ preventScroll: true });
   }
   function openGallery(cell) {
     set = [...cell.closest('.grid').querySelectorAll('.cell[data-full]')];
     lb.classList.add('is-gallery');
+    lbImg.removeAttribute('src');
     show(set.indexOf(cell));
     openLb();
   }
   function openVideo(src) {
     set = [];
     lb.classList.remove('is-gallery');
+    lbImg.removeAttribute('src');
     lbVideo.src = src;
     lbVideo.play().catch(() => {});
     openLb();
   }
+  function isOpen() { return lb.classList.contains('open'); }
   function closeLb() {
-    lb.hidden = true;
-    lb.classList.remove('is-gallery');
-    set = [];
-    lbImg.removeAttribute('src');
-    lbVideo.pause(); lbVideo.removeAttribute('src'); lbVideo.load();
+    if (!isOpen()) return;
+    token++;
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden', 'true');
+    lbVideo.pause();
     document.body.style.overflow = '';
-    if (lastFocus) lastFocus.focus();
+    if (lastFocus) lastFocus.focus({ preventScroll: true });
+    closeTimer = setTimeout(() => {   // 等淡出結束再清掉內容
+      lb.classList.remove('is-gallery');
+      set = [];
+      lbImg.removeAttribute('src');
+      lbVideo.removeAttribute('src'); lbVideo.load();
+    }, 360);
   }
   document.querySelectorAll('.cell[data-full]').forEach((b) => {
     b.addEventListener('click', () => openGallery(b));
@@ -147,28 +184,40 @@ const ICONS = {
   document.querySelectorAll('[data-video]').forEach((b) => {
     b.addEventListener('click', () => openVideo(b.dataset.video));
   });
-  lb.querySelector('.lb-prev').addEventListener('click', () => show(idx - 1));
-  lb.querySelector('.lb-next').addEventListener('click', () => show(idx + 1));
+  lb.querySelector('.lb-prev').addEventListener('click', () => show(idx - 1, -1));
+  lb.querySelector('.lb-next').addEventListener('click', () => show(idx + 1, 1));
   lb.querySelector('.lb-close').addEventListener('click', closeLb);
   lb.addEventListener('click', (e) => { if (e.target === lb) closeLb(); });   // 點黑色背景關閉
   document.addEventListener('keydown', (e) => {
-    if (lb.hidden) return;
+    if (!isOpen()) return;
     if (e.key === 'Escape') closeLb();
-    else if (set.length && e.key === 'ArrowRight') show(idx + 1);
-    else if (set.length && e.key === 'ArrowLeft') show(idx - 1);
+    else if (set.length && e.key === 'ArrowRight') show(idx + 1, 1);
+    else if (set.length && e.key === 'ArrowLeft') show(idx - 1, -1);
   });
-  // 手機：左右滑動切換
-  let touchX = null, touchY = null;
+
+  // 手機：照片跟著手指移動，放開後超過門檻就換下一張，否則彈回原位
+  let startX = null, startY = null, dx = 0, horizontal = null;
   lb.addEventListener('touchstart', (e) => {
-    touchX = e.touches[0].clientX; touchY = e.touches[0].clientY;
+    if (!set.length || e.touches.length > 1) { startX = null; return; }
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY; dx = 0; horizontal = null;
   }, { passive: true });
-  lb.addEventListener('touchend', (e) => {
-    if (touchX === null || !set.length) return;
-    const dx = e.changedTouches[0].clientX - touchX;
-    const dy = e.changedTouches[0].clientY - touchY;
-    touchX = null;
-    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) show(dx < 0 ? idx + 1 : idx - 1);
+  lb.addEventListener('touchmove', (e) => {
+    if (startX === null || e.touches.length > 1) return;
+    dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (horizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) horizontal = Math.abs(dx) > Math.abs(dy);
+    if (horizontal) {
+      lbImg.classList.add('dragging');
+      lbImg.style.transform = 'translateX(' + dx + 'px)';
+    }
   }, { passive: true });
+  lb.addEventListener('touchend', () => {
+    if (startX === null) return;
+    startX = null;
+    lbImg.classList.remove('dragging');
+    if (horizontal && Math.abs(dx) > 55) show(dx < 0 ? idx + 1 : idx - 1, dx < 0 ? 1 : -1);
+    else lbImg.style.transform = '';
+  });
 
   /* ---------- contact form → 開啟 Gmail 或郵件軟體的寄信畫面（內容自動帶入） ---------- */
   const form = document.getElementById('contactForm');
