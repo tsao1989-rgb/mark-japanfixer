@@ -15,14 +15,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&family=Noto+Serif+JP:wght@700&family=Noto+Serif+TC:wght@700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
 <header class="site-header" id="top">
   <div class="header-in">
     <a class="logo" href="#top" aria-label="MARK">M</a>
-    <nav class="nav" aria-label="Menu">
+    <nav class="nav" id="siteNav" aria-label="Menu">
       <a href="#work">Work</a>
       <a href="#awards" class="nav-optional">Awards</a>
       <a href="#service">Service</a>
@@ -32,6 +32,7 @@
         <span data-l="zh">日本語</span><span data-l="ja">中文</span>
       </button>
     </nav>
+    <button type="button" class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav">Menu</button>
   </div>
 </header>
 
@@ -296,10 +297,13 @@
 
 <div class="lightbox" id="lightbox" hidden>
   <button type="button" class="lb-close" aria-label="Close">×</button>
+  <button type="button" class="lb-nav lb-prev" aria-label="Previous photo">‹</button>
   <img alt="">
+  <button type="button" class="lb-nav lb-next" aria-label="Next photo">›</button>
+  <p class="lb-count" aria-live="polite"></p>
   <video controls playsinline></video>
 </div>
 
-<script src="main.js?v=3"></script>
+<script src="main.js?v=5"></script>
 </body>
 </html>
