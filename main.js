@@ -35,6 +35,8 @@ const ICONS = {
     root.dataset.lang = lang;
     root.lang = lang === 'ja' ? 'ja' : 'zh-Hant';
     document.title = TITLES[lang];
+    const fabEl = document.getElementById('fab');
+    if (fabEl) fabEl.setAttribute('aria-label', lang === 'ja' ? 'お問い合わせ' : '聯絡我');
     document.querySelectorAll('[data-ph-zh]').forEach((el) => {
       el.placeholder = el.dataset[lang === 'ja' ? 'phJa' : 'phZh'];
     });
@@ -60,6 +62,37 @@ const ICONS = {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.body.classList.contains('menu-open')) setMenu(false);
   });
+
+  /* ---------- 手機版聯絡按鈕：離開首頁大標後才出現，到了聯絡區就收起來 ---------- */
+  const fab = document.getElementById('fab');
+  if (fab && 'IntersectionObserver' in window) {
+    let pastHero = false;
+    let atContact = false;
+    // 停下來時，如果按鈕底下有文字或照片，就滑進右側留白，只露出一角，不擋內容
+    const BLOCK = 'p, h1, h2, h3, li, dt, dd, img, video, label, input, textarea, .send';
+    const underFab = () => {
+      const cs = getComputedStyle(fab);
+      const size = fab.offsetWidth;
+      const l = innerWidth - parseFloat(cs.right) - size;
+      const t = innerHeight - parseFloat(cs.bottom) - size;
+      const pts = [[l + size / 2, t + size / 2], [l + 6, t + 6], [l + size - 6, t + 6], [l + 6, t + size - 6], [l + size - 6, t + size - 6]];
+      return pts.some(([x, y]) => document.elementsFromPoint(x, y)
+        .some((el) => el !== fab && !fab.contains(el) && el.matches(BLOCK)));
+    };
+    const settle = () => fab.classList.toggle('tucked', fab.classList.contains('show') && underFab());
+    let idle = null;
+    addEventListener('scroll', () => {
+      fab.classList.remove('tucked');          // 捲動時完整跟著畫面
+      clearTimeout(idle);
+      idle = setTimeout(settle, 180);          // 停下 0.18 秒後判斷要不要收進邊緣
+    }, { passive: true });
+    addEventListener('resize', settle);
+    const update = () => { fab.classList.toggle('show', pastHero && !atContact); settle(); };
+    new IntersectionObserver(([e]) => { pastHero = !e.isIntersecting; update(); })
+      .observe(document.querySelector('.hero'));
+    new IntersectionObserver(([e]) => { atContact = e.isIntersecting; update(); }, { rootMargin: '0px 0px -34% 0px' })
+      .observe(document.getElementById('contact'));
+  }
 
   /* ---------- contact info ---------- */
   const mailLink = document.getElementById('mailLink');

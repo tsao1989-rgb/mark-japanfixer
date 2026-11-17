@@ -222,6 +222,9 @@ button { font: inherit; color: inherit; letter-spacing: inherit; background: non
 /* ---------- footer ---------- */
 .site-footer { padding: var(--s7) var(--side); text-align: center; font-size: 14px; color: var(--gray); }
 
+/* ---------- 手機版聯絡按鈕（只在手機顯示） ---------- */
+.fab { display: none; }
+
 /* ---------- lightbox ---------- */
 .lightbox {
   position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
@@ -348,6 +351,26 @@ button { font: inherit; color: inherit; letter-spacing: inherit; background: non
   .form input, .form textarea { margin-bottom: var(--s4); }
   .send-row { grid-template-columns: 1fr; gap: var(--s2); margin-top: var(--s2); }
   .site-footer { padding: var(--s6) var(--side); }
+
+  /* 右下角圓形聯絡按鈕：55px，貼在右側留白裡；跟著畫面，但只在需要時出現 */
+  .fab {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+    position: fixed; z-index: 40;
+    right: calc(var(--s2) + env(safe-area-inset-right, 0px));
+    bottom: calc(var(--s3) + env(safe-area-inset-bottom, 0px));
+    width: var(--s5); height: var(--s5); border-radius: 50%;
+    background: var(--blue); color: #fff;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 var(--s1) var(--s3) rgba(30, 43, 87, .28);   /* 白色細框：在藍色區塊上也看得清楚 */
+    opacity: 0; transform: translateY(var(--s3)) scale(.85); pointer-events: none;
+    transition: opacity .4s var(--ease), transform .4s var(--ease);
+  }
+  .fab.show { opacity: 1; transform: none; pointer-events: auto; }
+  .fab.show:active { transform: scale(.92); }
+  /* 收進右側留白：左緣剛好對齊內文右緣，不壓到任何文字 */
+  .fab.show.tucked { transform: translateX(calc(var(--s2) + var(--s5) - var(--side))); }
+  .fab svg { width: 21px; height: 21px; }
+  .fab-text { font-size: 10px; line-height: 1; letter-spacing: .08em; }
+  .menu-open .fab { opacity: 0; pointer-events: none; }
   .lightbox { padding: var(--s6) 0; }
   .lb-nav { width: var(--s5); height: var(--s6); font-size: var(--s4); }
 }
