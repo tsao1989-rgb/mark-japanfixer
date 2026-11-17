@@ -51,13 +51,13 @@ const ICONS = {
     });
     try { localStorage.setItem('mark-lang', lang); } catch (e) {}
   }
-  document.getElementById('langBtn').addEventListener('click', () => {
+  document.querySelectorAll('[data-lang-toggle]').forEach((b) => b.addEventListener('click', () => {
     setLang(root.dataset.lang === 'ja' ? 'zh' : 'ja');
     compose();
-  });
+  }));
   let saved = null;
   try { saved = localStorage.getItem('mark-lang'); } catch (e) {}
-  setLang(saved || 'zh');
+  setLang(saved || ((navigator.language || '').toLowerCase().indexOf('ja') === 0 ? 'ja' : 'zh'));
 
   /* 疊層打開時，讓背後的內容暫時無法被鍵盤或螢幕閱讀器操作 */
   function setInert(els, on) {
@@ -83,6 +83,24 @@ const ICONS = {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.body.classList.contains('menu-open')) setMenu(false);
   });
+
+  /* ---------- 頁首：往下捲時收起、往上捲時出現，隨時能回到選單 ---------- */
+  const header = document.querySelector('.site-header');
+  let lastY = window.scrollY;
+  let ticking = false;
+  function onScrollHeader() {
+    const y = window.scrollY;
+    header.classList.toggle('scrolled', y > 21);
+    if (document.body.classList.contains('menu-open')) header.classList.remove('hide');
+    else if (y > 144 && y > lastY + 6) header.classList.add('hide');
+    else if (y < lastY - 6 || y <= 144) header.classList.remove('hide');
+    lastY = y;
+    ticking = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(onScrollHeader); }
+  }, { passive: true });
+  onScrollHeader();
 
   /* ---------- 手機版聯絡按鈕：離開首頁大標後才出現，到了聯絡區就收起來 ---------- */
   const fab = document.getElementById('fab');
@@ -120,6 +138,24 @@ const ICONS = {
     const done = () => img.classList.add('loaded');
     if (img.complete && img.naturalWidth) done();
     else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', done, { once: true }); }
+  });
+
+  /* ---------- 手機作品照片列：下方顯示「1 / 6」 ---------- */
+  document.querySelectorAll('.project .grid').forEach((g) => {
+    const n = g.children.length;
+    const c = document.createElement('p');
+    c.className = 'grid-count';
+    c.setAttribute('aria-hidden', 'true');
+    c.textContent = '1 / ' + n;
+    g.after(c);
+    let raf = 0;
+    g.addEventListener('scroll', () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const step = g.children[0].getBoundingClientRect().width + parseFloat(getComputedStyle(g).columnGap || 0);
+        c.textContent = Math.min(n, Math.round(g.scrollLeft / step) + 1) + ' / ' + n;
+      });
+    }, { passive: true });
   });
 
   /* ---------- reveal on scroll ---------- */
@@ -183,6 +219,7 @@ const ICONS = {
     lb.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     setInert(behind(), true);
+    document.body.classList.add('lb-open');
     lb.querySelector('.lb-close').focus({ preventScroll: true });
     // 手機按「返回」時關掉放大檢視，而不是離開網站
     try { history.pushState({ lightbox: true }, ''); } catch (e) {}
@@ -212,6 +249,7 @@ const ICONS = {
     lbVideo.pause();
     document.body.style.overflow = '';
     setInert(behind(), false);
+    document.body.classList.remove('lb-open');
     if (fromHistory !== true && history.state && history.state.lightbox) { try { history.back(); } catch (e) {} }
     if (lastFocus) lastFocus.focus({ preventScroll: true });
     closeTimer = setTimeout(() => {   // 等淡出結束再清掉內容
@@ -240,17 +278,18 @@ const ICONS = {
   });
 
   // 手機：照片跟著手指移動，放開後超過門檻就換下一張，否則彈回原位
-  let startX = null, startY = null, dx = 0, horizontal = null;
+  let startX = null, startY = null, dx = 0, lastDy = 0, horizontal = null;
   const resetDrag = () => { startX = null; lbImg.classList.remove('dragging'); lbImg.style.transform = ''; };
   lb.addEventListener('touchcancel', resetDrag);
   lb.addEventListener('touchstart', (e) => {
     if (!set.length || e.touches.length > 1) { resetDrag(); return; }
-    startX = e.touches[0].clientX; startY = e.touches[0].clientY; dx = 0; horizontal = null;
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY; dx = 0; lastDy = 0; horizontal = null;
   }, { passive: true });
   lb.addEventListener('touchmove', (e) => {
     if (startX === null || e.touches.length > 1) return;
     dx = e.touches[0].clientX - startX;
     const dy = e.touches[0].clientY - startY;
+    lastDy = dy;
     if (horizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) horizontal = Math.abs(dx) > Math.abs(dy);
     if (horizontal) {
       lbImg.classList.add('dragging');
@@ -262,6 +301,7 @@ const ICONS = {
     startX = null;
     lbImg.classList.remove('dragging');
     if (horizontal && Math.abs(dx) > 55) show(dx < 0 ? idx + 1 : idx - 1, dx < 0 ? 1 : -1);
+    else if (horizontal === false && lastDy > 89) closeLb();   // 往下滑關閉
     else lbImg.style.transform = '';
   });
 
