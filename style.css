@@ -120,6 +120,14 @@ body { padding-top: var(--s7); }
   bottom: 6px; height: 2px; background: var(--blue);
   transform: scaleX(0); transition: transform .45s var(--ease);
 }
+.filter-btn::before {   /* 沒選中的分類也有一條淡淡的底線：一看就知道每一個都能點 */
+  content: ""; position: absolute; left: var(--s1); right: calc(var(--s1) + .12em);
+  bottom: 6px; height: 1px; background: currentColor; opacity: .28;
+  transition: opacity .3s var(--ease);
+}
+@media (hover: hover) { .filter-btn:hover::before { opacity: .6; } }
+.filter-btn[aria-pressed="false"]:active::before { opacity: .6; }   /* 手機點下去時底線變深 */
+.filter-btn[aria-pressed="true"]::before { opacity: 0; }
 .filter-btn[aria-pressed="true"] { color: var(--blue); cursor: default; }
 .filter-btn[aria-pressed="true"]::after { transform: scaleX(1); }
 @media (hover: hover) { .filter-btn:hover { color: var(--blue); } }
@@ -398,7 +406,7 @@ body { padding-top: var(--s7); }
   .filter { margin-inline: calc(-1 * var(--side)); }
   .filter-in { gap: var(--s1); padding-inline: calc(var(--side) - var(--s1)); }
   .filter-btn { font-size: 14px; letter-spacing: .08em; }
-  .filter-btn::after { right: calc(var(--s1) + .08em); }
+  .filter-btn::after, .filter-btn::before { right: calc(var(--s1) + .08em); }
   .filter.fade-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--s4)), transparent); mask-image: linear-gradient(to right, #000 calc(100% - var(--s4)), transparent); }
   .filter.fade-l { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - var(--s4)), transparent); mask-image: linear-gradient(to left, #000 calc(100% - var(--s4)), transparent); }
   .filter.fade-l.fade-r { -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--s4), #000 calc(100% - var(--s4)), transparent); mask-image: linear-gradient(to right, transparent, #000 var(--s4), #000 calc(100% - var(--s4)), transparent); }

@@ -143,23 +143,53 @@ const ICONS = {
     else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', done, { once: true }); }
   });
 
-  /* ---------- 手機作品照片列：下方顯示「1 / 6」 ---------- */
+  /* ---------- 手機作品照片列：下方顯示「1 / 6」，第一次看到時示範往左滑 ---------- */
+  const phoneMQ = window.matchMedia('(max-width: 640px)');
+  const reduceMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let photoNudged = false;                                 // 整頁只示範一次：第一排看到的照片
+  const photoIOs = [];
   document.querySelectorAll('.project .grid').forEach((g) => {
     const n = g.children.length;
     const c = document.createElement('p');
     c.className = 'grid-count';
     c.setAttribute('aria-hidden', 'true');
-    c.textContent = '1 / ' + n;
+    c.innerHTML = '<span class="gc-num">1 / ' + n + '</span>';
     g.after(c);
-    g._count = c;
+    g._count = c.querySelector('.gc-num');
     let raf = 0;
-    g.addEventListener('scroll', () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const step = g.children[0].getBoundingClientRect().width + parseFloat(getComputedStyle(g).columnGap || 0);
-        c.textContent = Math.min(n, Math.round(g.scrollLeft / step) + 1) + ' / ' + n;
-      });
-    }, { passive: true });
+    const update = () => {
+      const step = g.children[0].getBoundingClientRect().width + parseFloat(getComputedStyle(g).columnGap || 0);
+      const i = Math.min(n, Math.round(g.scrollLeft / step) + 1);
+      g._count.textContent = i + ' / ' + n;
+    };
+    g.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); }, { passive: true });
+
+    // 第一次滑到這排照片時，輕輕往左帶一下再回來，示範可以左右滑（每排只做一次）
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        if (photoNudged || !phoneMQ.matches || reduceMQ.matches || g.scrollLeft > 1 || g.scrollWidth <= g.clientWidth + 1) return;
+        photoNudged = true;
+        photoIOs.forEach((o) => o.disconnect());
+        let t2 = 0, t3 = 0;
+        const t1 = setTimeout(() => {
+          if (g.scrollLeft > 1) return;                 // 使用者已經自己在滑了
+          g.style.scrollSnapType = 'none';              // 示範時暫停對齊，才能只滑一小段
+          g.scrollTo({ left: 89, behavior: 'smooth' });
+          t2 = setTimeout(() => {
+            g.scrollTo({ left: 0, behavior: 'smooth' });
+            t3 = setTimeout(() => { g.style.scrollSnapType = ''; }, 700);
+          }, 550);
+        }, 600);
+        const cancel = () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); g.style.scrollSnapType = ''; };
+        g.addEventListener('pointerdown', cancel, { once: true });
+        g.addEventListener('touchstart', cancel, { once: true, passive: true });
+        g.addEventListener('wheel', cancel, { once: true, passive: true });
+      }, { threshold: 0.6 });
+      photoIOs.push(io);
+      io.observe(g);
+    }
   });
 
   /* ---------- 作品分類：按類型篩選；網址會記住目前的類型（#work-tv 等）可直接分享 ---------- */
@@ -271,6 +301,25 @@ const ICONS = {
       document.getElementById('work').scrollIntoView({ block: 'start' });
     });
     requestAnimationFrame(refreshFilter);
+    // 第一次看到分類列、而且右邊還有選項時，輕輕往左滑一下再回來，提示可以左右滑
+    if ('IntersectionObserver' in window && !reduceMotion.matches) {
+      const nudgeIO = new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting) return;
+        nudgeIO.disconnect();
+        const max = wFilter.scrollWidth - wFilter.clientWidth;
+        if (max < 2 || wFilter.scrollLeft > 1) return;
+        let t2 = 0;
+        const t1 = setTimeout(() => {
+          wFilter.scrollTo({ left: Math.min(55, max), behavior: 'smooth' });
+          t2 = setTimeout(() => wFilter.scrollTo({ left: 0, behavior: 'smooth' }), 650);
+        }, 1000);
+        const cancel = () => { clearTimeout(t1); clearTimeout(t2); };
+        wFilter.addEventListener('pointerdown', cancel, { once: true });
+        wFilter.addEventListener('touchstart', cancel, { once: true, passive: true });
+        wFilter.addEventListener('wheel', cancel, { once: true, passive: true });
+      }, { threshold: 0.9 });
+      nudgeIO.observe(wFilter);
+    }
   }
 
   /* ---------- reveal on scroll ---------- */
