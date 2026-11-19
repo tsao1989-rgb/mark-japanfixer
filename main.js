@@ -46,6 +46,8 @@ const ICONS = {
       lbEl.querySelector('.lb-prev').setAttribute('aria-label', L.prev);
       lbEl.querySelector('.lb-next').setAttribute('aria-label', L.next);
     }
+    const wf = document.getElementById('workFilter');
+    if (wf) wf.setAttribute('aria-label', lang === 'ja' ? 'ジャンルで作品を絞り込む' : '依類型篩選作品');
     document.querySelectorAll('[data-ph-zh]').forEach((el) => {
       el.placeholder = el.dataset[lang === 'ja' ? 'phJa' : 'phZh'];
     });
@@ -54,6 +56,7 @@ const ICONS = {
   document.querySelectorAll('[data-lang-toggle]').forEach((b) => b.addEventListener('click', () => {
     setLang(root.dataset.lang === 'ja' ? 'zh' : 'ja');
     compose();
+    refreshFilter();
   }));
   let saved = null;
   try { saved = localStorage.getItem('mark-lang'); } catch (e) {}
@@ -148,6 +151,7 @@ const ICONS = {
     c.setAttribute('aria-hidden', 'true');
     c.textContent = '1 / ' + n;
     g.after(c);
+    g._count = c;
     let raf = 0;
     g.addEventListener('scroll', () => {
       cancelAnimationFrame(raf);
@@ -158,10 +162,121 @@ const ICONS = {
     }, { passive: true });
   });
 
+  /* ---------- 作品分類：按類型篩選；網址會記住目前的類型（#work-tv 等）可直接分享 ---------- */
+  const wFilter = document.getElementById('workFilter');
+  const wList = document.getElementById('workList');
+  const projects = [...wList.querySelectorAll('.project')];
+  const fBtns = [...wFilter.querySelectorAll('.filter-btn')];
+  const fStatus = document.getElementById('filterStatus');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const catsOf = (p) => (p.dataset.cat || '').split(/\s+/).filter(Boolean);
+  const countOf = (cat) => (cat === 'all' ? projects.length : projects.filter((p) => catsOf(p).includes(cat)).length);
+  let revealIO = null;
+  let fToken = 0;
+
+  // 沒有作品的類型不顯示；能選的類型少於兩個時，整排分類都不顯示
+  fBtns.forEach((b) => { if (b.dataset.filter !== 'all' && !countOf(b.dataset.filter)) b.hidden = true; });
+  const filterUsable = fBtns.filter((b) => b.dataset.filter !== 'all' && !b.hidden).length >= 2;
+  if (filterUsable) wFilter.hidden = false;
+  const pressedBtn = () => fBtns.find((b) => b.getAttribute('aria-pressed') === 'true');
+
+  function updateFades() {
+    const max = wFilter.scrollWidth - wFilter.clientWidth;
+    wFilter.classList.toggle('fade-l', wFilter.scrollLeft > 1);
+    wFilter.classList.toggle('fade-r', wFilter.scrollLeft < max - 1);
+  }
+  function keepInView(btn, smooth) {
+    if (!btn) return;
+    const fr = wFilter.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    const left = wFilter.scrollLeft + (br.left - fr.left) - (wFilter.clientWidth - br.width) / 2;
+    wFilter.scrollTo({ left: Math.max(0, left), behavior: smooth ? 'smooth' : 'auto' });
+  }
+  function refreshFilter() {
+    if (wFilter.hidden) return;
+    keepInView(pressedBtn(), false);
+    updateFades();
+  }
+  function announce(cat) {
+    const ja = root.dataset.lang === 'ja';
+    const btn = pressedBtn();
+    const label = btn ? btn.querySelector('[data-l="' + (ja ? 'ja' : 'zh') + '"]').textContent : '';
+    const n = countOf(cat);
+    fStatus.textContent = cat === 'all'
+      ? (ja ? 'すべての作品：' + n + '件' : '全部作品：' + n + ' 件')
+      : (ja ? label + '：' + n + '件の作品' : label + '：' + n + ' 件作品');
+  }
+  function applyFilter(cat, opts) {
+    opts = opts || {};
+    if (!fBtns.some((b) => b.dataset.filter === cat && !b.hidden)) cat = 'all';
+    fBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === cat)));
+    const swap = () => {
+      projects.forEach((p) => {
+        const show = cat === 'all' || catsOf(p).includes(cat);
+        const wasHidden = p.hidden;
+        p.hidden = !show;
+        if (show) {
+          p.classList.add('in');                       // 切換後看得到的作品一律只用整體淡入，不再疊加捲動動畫
+          if (revealIO) revealIO.unobserve(p);
+          if (wasHidden) {
+            const g = p.querySelector('.grid');
+            if (g) { g.scrollLeft = 0; if (g._count) g._count.textContent = '1 / ' + g.children.length; }
+          }
+        }
+      });
+    };
+    if (opts.hash !== false) {
+      try { history.replaceState(history.state, '', cat === 'all' ? '#work' : '#work-' + cat); } catch (e) {}
+    }
+    if (opts.instant || reduceMotion.matches) {
+      swap();
+    } else {
+      const t = ++fToken;                               // 連續點擊時以最後一次為準
+      wList.classList.add('is-out');
+      setTimeout(() => {
+        if (t !== fToken) return;
+        swap();
+        wList.classList.add('is-pre');
+        wList.classList.remove('is-out');
+        void wList.offsetWidth;
+        wList.classList.remove('is-pre');
+      }, 200);
+    }
+    if (opts.announce) announce(cat);
+    keepInView(pressedBtn(), !opts.instant);
+  }
+  if (filterUsable) {
+    fBtns.forEach((b) => b.addEventListener('click', () => {
+      if (b.getAttribute('aria-pressed') === 'true') return;
+      applyFilter(b.dataset.filter, { announce: true });
+    }));
+    let fRaf = 0;
+    wFilter.addEventListener('scroll', () => { cancelAnimationFrame(fRaf); fRaf = requestAnimationFrame(updateFades); }, { passive: true });
+    window.addEventListener('resize', refreshFilter);
+    // 打開分享的網址（例如 #work-tv）時，直接顯示該類型
+    const m = location.hash.match(/^#work-([a-z]+)$/);
+    if (m) {
+      if (countOf(m[1]) && fBtns.some((b) => b.dataset.filter === m[1] && !b.hidden)) {
+        applyFilter(m[1], { instant: true, hash: false });
+        requestAnimationFrame(() => document.getElementById('work').scrollIntoView({ behavior: 'instant', block: 'start' }));
+      } else {
+        try { history.replaceState(history.state, '', '#work'); } catch (e) {}
+      }
+    }
+    window.addEventListener('hashchange', () => {
+      const h = location.hash.match(/^#work-([a-z]+)$/);
+      if (!h) return;
+      const active = pressedBtn();
+      if (!(active && active.dataset.filter === h[1])) applyFilter(h[1], { hash: false });
+      document.getElementById('work').scrollIntoView({ block: 'start' });
+    });
+    requestAnimationFrame(refreshFilter);
+  }
+
   /* ---------- reveal on scroll ---------- */
   const reveals = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
+    const io = revealIO = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
       });

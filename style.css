@@ -95,7 +95,43 @@ body { padding-top: var(--s7); }
 
 /* ---------- work ---------- */
 .work { padding: 0 var(--side); }
-.project + .project { margin-top: var(--s8); }
+
+/* ---------- 作品分類（Work 標題下方） ---------- */
+.work-head { padding-bottom: var(--s6); }
+.keep { word-break: keep-all; }   /* 只在標好的位置換行，不把一個詞拆兩半 */
+.filter {
+  margin-top: var(--s5);
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-block: var(--s1);            /* 焦點框不被裁掉 */
+}
+.filter::-webkit-scrollbar { display: none; }
+.filter-in { display: flex; gap: var(--s4); width: max-content; margin-inline: auto; }  /* 放得下就置中，放不下就靠左可滑 */
+.filter-btn {
+  position: relative; flex: none; min-height: 44px;
+  padding: var(--s2) var(--s1);
+  font-family: var(--sans); font-weight: 400; font-size: 15px; line-height: 1.4;
+  letter-spacing: .12em; white-space: nowrap;
+  color: var(--gray);
+  transition: color .3s var(--ease), opacity .2s;
+}
+.filter-btn::after {
+  content: ""; position: absolute; left: var(--s1); right: calc(var(--s1) + .12em);
+  bottom: 6px; height: 2px; background: var(--blue);
+  transform: scaleX(0); transition: transform .45s var(--ease);
+}
+.filter-btn[aria-pressed="true"] { color: var(--blue); cursor: default; }
+.filter-btn[aria-pressed="true"]::after { transform: scaleX(1); }
+@media (hover: hover) { .filter-btn:hover { color: var(--blue); } }
+.filter-btn[aria-pressed="false"]:active { opacity: .6; }
+
+.work-list {
+  display: flex; flex-direction: column; gap: var(--s8);
+  overflow-anchor: none;
+  transition: opacity .5s var(--ease), transform .5s var(--ease);
+}
+.work-list.is-out { opacity: 0; pointer-events: none; transition: opacity .2s var(--ease); }
+.work-list.is-pre { opacity: 0; transform: translateY(var(--s2)); transition: none; }
 
 .p-head {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap);
@@ -209,6 +245,7 @@ body { padding-top: var(--s7); }
 .form .invalid { border-color: var(--red); }
 .form-error { font-weight: 400; font-size: 14px; color: var(--red); margin-bottom: var(--s3); }
 .form-error[hidden] { display: none; }
+[hidden] { display: none !important; }   /* 篩選時隱藏的作品，不會被其他 display 規則蓋過 */
 .send-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s3); }
 .send {
   display: flex; align-items: center; justify-content: center; min-height: 55px; padding: var(--s2);
@@ -300,9 +337,12 @@ body { padding-top: var(--s7); }
 
 /* ---------- responsive：每縮一段，間距各降一級 ---------- */
 @media (max-width: 1000px) {
+  .work-list { gap: var(--s7); }
+  .work-head { padding-bottom: var(--s5); }
+  .filter { margin-top: var(--s4); }
+  .filter-in { gap: var(--s3); }
   :root { --side: var(--s4); --gap: var(--s4); --t-h1: 89px; --t-h2: 55px; --t-h3: 30px; }
   .hero { padding: var(--s6) var(--side) var(--s7); }
-  .project + .project { margin-top: var(--s7); }
   .p-head { grid-template-columns: 1fr; gap: var(--s3); margin-bottom: var(--s4); }
   .p-desc, .p-role { max-width: 34em; }
   .text-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: var(--s6); }
@@ -350,10 +390,18 @@ body { padding-top: var(--s7); }
   .hero-sub br { display: none; }
 
   /* 作品：標題區每段相隔 34，照片前留 55，案子之間 144 */
-  .project + .project { margin-top: var(--s7); }
   .p-head { gap: var(--s4); margin-bottom: var(--s5); }
   .p-cap { margin-top: var(--s2); font-size: 13px; }
   .p-role-label, .p-award { font-size: 13px; }
+
+  /* 手機：分類一排可左右滑，兩側有內容時淡出提示 */
+  .filter { margin-inline: calc(-1 * var(--side)); }
+  .filter-in { gap: var(--s1); padding-inline: calc(var(--side) - var(--s1)); }
+  .filter-btn { font-size: 14px; letter-spacing: .08em; }
+  .filter-btn::after { right: calc(var(--s1) + .08em); }
+  .filter.fade-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--s4)), transparent); mask-image: linear-gradient(to right, #000 calc(100% - var(--s4)), transparent); }
+  .filter.fade-l { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - var(--s4)), transparent); mask-image: linear-gradient(to left, #000 calc(100% - var(--s4)), transparent); }
+  .filter.fade-l.fade-r { -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--s4), #000 calc(100% - var(--s4)), transparent); mask-image: linear-gradient(to right, transparent, #000 var(--s4), #000 calc(100% - var(--s4)), transparent); }
 
   /* 手機：照片放在說明之後、負責工作之前，先看到畫面 */
   .project { display: flex; flex-direction: column; }

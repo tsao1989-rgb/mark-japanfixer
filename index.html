@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&family=Noto+Serif+JP:wght@700&family=Noto+Serif+TC:wght@700&family=Playfair+Display:wght@700;900&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&family=Noto+Serif+JP:wght@700&family=Noto+Serif+TC:wght@700&family=Playfair+Display:wght@700;900&display=swap"></noscript>
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 <script>/* 上次選日文、或手機設定為日文的訪客，一打開就顯示日文 */try{var l=localStorage.getItem('mark-lang')||((navigator.language||'').toLowerCase().indexOf('ja')===0?'ja':'zh');if(l==='ja'){document.documentElement.dataset.lang='ja';document.documentElement.lang='ja';}}catch(e){}</script>
 </head>
 <body>
@@ -57,9 +57,24 @@
 
 <!-- ============ WORK ============ -->
 <section class="work" id="work">
+  <div class="work-head">
+    <h2 class="sec-title reveal">Work</h2>
+    <!-- 作品分類：只顯示有作品的類型；少於兩類時整排隱藏 -->
+    <div class="filter reveal" id="workFilter" role="group" aria-label="依類型篩選作品" hidden>
+      <div class="filter-in">
+          <button type="button" class="filter-btn" data-filter="all" aria-pressed="true" aria-controls="workList"><span data-l="zh">全部</span><span data-l="ja">すべて</span></button>
+          <button type="button" class="filter-btn" data-filter="documentary" aria-pressed="false" aria-controls="workList"><span data-l="zh">紀錄片</span><span data-l="ja">ドキュメンタリー</span></button>
+          <button type="button" class="filter-btn" data-filter="tv" aria-pressed="false" aria-controls="workList"><span data-l="zh">電視節目</span><span data-l="ja">テレビ番組</span></button>
+          <button type="button" class="filter-btn" data-filter="brand" aria-pressed="false" aria-controls="workList"><span data-l="zh">廣告・品牌</span><span data-l="ja">広告・ブランド</span></button>
+          <button type="button" class="filter-btn" data-filter="news" aria-pressed="false" aria-controls="workList"><span data-l="zh">新聞・專題</span><span data-l="ja">ニュース・特集</span></button>
+      </div>
+    </div>
+    <p class="sr-only" id="filterStatus" role="status"></p>
+  </div>
 
+  <div class="work-list" id="workList">
   <!-- 01 Discovery -->
-  <article class="project reveal">
+  <article class="project reveal" data-cat="documentary">
     <header class="p-head">
       <div>
         <h2 class="p-title">
@@ -94,7 +109,7 @@
   </article>
 
   <!-- 02 Mediacorp -->
-  <article class="project reveal">
+  <article class="project reveal" data-cat="tv">
     <header class="p-head">
       <div>
         <h2 class="p-title">
@@ -127,12 +142,12 @@
   </article>
 
   <!-- 03 furrmacy -->
-  <article class="project reveal">
+  <article class="project reveal" data-cat="brand">
     <header class="p-head">
       <div>
         <h2 class="p-title">
           <span data-l="zh">furrmacy 阿聯酋宣傳影片</span>
-          <span data-l="ja">furrmacy UAE プロモーション映像</span>
+          <span data-l="ja" class="keep">furrmacy UAE <wbr>プロモーション映像</span>
         </h2>
         <p class="p-cap">furrmacy (2026)　<span data-l="zh">品牌宣傳影片</span><span data-l="ja">ブランドプロモーション映像</span></p>
       </div>
@@ -158,6 +173,7 @@
       <button class="cell" data-full="images/furrmacy-6.jpg"><img class="still" src="images/thumb/furrmacy-6.jpg" loading="lazy" decoding="async" alt="黃色背景前的訪談畫面" style="--x:100%;--z:1.5"></button>
     </div>
   </article>
+  </div>
 
 </section>
 
@@ -319,6 +335,6 @@
   <div class="lb-video"></div>
 </div>
 
-<script src="main.js?v=11"></script>
+<script src="main.js?v=12"></script>
 </body>
 </html>
