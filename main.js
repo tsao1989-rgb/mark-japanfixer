@@ -174,7 +174,9 @@ const ICONS = {
   /* ---------- lightbox：淡入淡出；同一案子的照片可左右切換（‹ ›、← →、手機跟手滑動） ---------- */
   const lb = document.getElementById('lightbox');
   const lbImg = lb.querySelector('img');
-  const lbVideo = lb.querySelector('video');
+  const lbVideo = lb.querySelector('.lb-video');
+  // 影片用 YouTube 內嵌播放；關閉時整個移除，聲音才會停
+  function stopVideo() { lbVideo.textContent = ''; lb.classList.remove('is-video'); }
   const lbCount = lb.querySelector('.lb-count');
   let lastFocus = null;
   let set = [];
@@ -226,18 +228,25 @@ const ICONS = {
   }
   function openGallery(cell) {
     set = [...cell.closest('.grid').querySelectorAll('.cell[data-full]')];
-    lbVideo.pause(); lbVideo.removeAttribute('src'); lbVideo.load();   // 剛關掉影片又馬上開照片時，不留下影片
+    stopVideo();   // 剛關掉影片又馬上開照片時，不留下影片
     lb.classList.add('is-gallery');
     lbImg.removeAttribute('src');
     show(set.indexOf(cell));
     openLb();
   }
-  function openVideo(src) {
+  function openVideo(id, title) {
     set = [];
     lb.classList.remove('is-gallery');
     lbImg.removeAttribute('src');
-    lbVideo.src = src;
-    lbVideo.play().catch(() => {});
+    stopVideo();
+    const f = document.createElement('iframe');
+    f.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1';
+    f.title = title || 'Video';
+    f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    f.allowFullscreen = true;
+    f.referrerPolicy = 'strict-origin-when-cross-origin';
+    lbVideo.appendChild(f);
+    lb.classList.add('is-video');
     openLb();
   }
   function isOpen() { return lb.classList.contains('open'); }
@@ -246,7 +255,7 @@ const ICONS = {
     token++;
     lb.classList.remove('open');
     lb.setAttribute('aria-hidden', 'true');
-    lbVideo.pause();
+    stopVideo();
     document.body.style.overflow = '';
     setInert(behind(), false);
     document.body.classList.remove('lb-open');
@@ -256,14 +265,13 @@ const ICONS = {
       lb.classList.remove('is-gallery');
       set = [];
       lbImg.removeAttribute('src');
-      lbVideo.removeAttribute('src'); lbVideo.load();
     }, 360);
   }
   document.querySelectorAll('.cell[data-full]').forEach((b) => {
     b.addEventListener('click', () => openGallery(b));
   });
-  document.querySelectorAll('[data-video]').forEach((b) => {
-    b.addEventListener('click', () => openVideo(b.dataset.video));
+  document.querySelectorAll('[data-youtube]').forEach((b) => {
+    b.addEventListener('click', () => openVideo(b.dataset.youtube, b.closest('.project').querySelector('.p-title').innerText.trim()));
   });
   lb.querySelector('.lb-prev').addEventListener('click', () => show(idx - 1, -1));
   lb.querySelector('.lb-next').addEventListener('click', () => show(idx + 1, 1));

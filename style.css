@@ -254,13 +254,17 @@ body { padding-top: var(--s7); }
 .lightbox.open { opacity: 1; visibility: visible; transition: opacity .35s var(--ease), visibility 0s; }   /* 打開時立刻可聚焦 */
 .lightbox { grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
 .lightbox img { width: 100%; height: 100%; object-fit: contain; }
-.lightbox video { max-width: 100%; max-height: 100%; justify-self: center; align-self: center; }
+.lb-video { display: none; }
+.lightbox.is-video .lb-video {
+  display: block; place-self: center;
+  width: min(100%, calc((100vh - 2 * var(--s6)) * 16 / 9)); aspect-ratio: 16 / 9; background: #000;
+}
+.lb-video iframe { display: block; width: 100%; height: 100%; border: 0; }
 @media (max-height: 500px) {   /* 手機橫向 */
   .lightbox { padding: var(--s4) var(--s6); }
   .lb-count { bottom: var(--s1); }
 }
-.lightbox img:not([src]), .lightbox video:not([src]) { display: none; }
-.lightbox video { cursor: default; }
+.lightbox img:not([src]) { display: none; }
 .lb-close { position: absolute; top: var(--s2); right: var(--s3); z-index: 2; width: 44px; height: 44px; color: #fff; font-size: 34px; line-height: 1; }
 .lightbox img {
   user-select: none; -webkit-user-select: none; -webkit-user-drag: none;

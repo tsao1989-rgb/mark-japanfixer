@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&family=Noto+Serif+JP:wght@700&family=Noto+Serif+TC:wght@700&family=Playfair+Display:wght@700;900&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&family=Noto+Serif+JP:wght@700&family=Noto+Serif+TC:wght@700&family=Playfair+Display:wght@700;900&display=swap"></noscript>
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 <script>/* 上次選日文、或手機設定為日文的訪客，一打開就顯示日文 */try{var l=localStorage.getItem('mark-lang')||((navigator.language||'').toLowerCase().indexOf('ja')===0?'ja':'zh');if(l==='ja'){document.documentElement.dataset.lang='ja';document.documentElement.lang='ja';}}catch(e){}</script>
 </head>
 <body>
@@ -72,7 +72,7 @@
       <p class="p-desc">
         <span data-l="zh">Discovery 頻道醫療紀錄片的拍攝協調。帶著攝影團隊走進再生醫學的研究室、無塵室與醫療現場。</span>
         <span data-l="ja">Discovery チャンネルの医療ドキュメンタリーで撮影コーディネートを担当。再生医療の研究室、クリーンルーム、医療の現場へ撮影チームをご案内しました。</span>
-        <button type="button" class="p-video" data-video="video/medical-elite-promo.mp4">▶ <span data-l="zh">觀看 30 秒宣傳片</span><span data-l="ja">30秒プロモを見る</span></button>
+        <button type="button" class="p-video" data-youtube="JxVk7_Kpvt0">▶ <span data-l="zh">觀看完整節目（44 分鐘）</span><span data-l="ja">番組本編を見る（44分）</span></button>
       </p>
       <div class="p-role">
         <p class="p-role-label"><span data-l="zh">MARK 負責的工作</span><span data-l="ja">MARK の担当業務</span></p>
@@ -316,9 +316,9 @@
   <img alt="">
   <button type="button" class="lb-nav lb-next" aria-label="Next photo">›</button>
   <p class="lb-count" aria-live="polite"></p>
-  <video controls playsinline preload="none"></video>
+  <div class="lb-video"></div>
 </div>
 
-<script src="main.js?v=10"></script>
+<script src="main.js?v=11"></script>
 </body>
 </html>
