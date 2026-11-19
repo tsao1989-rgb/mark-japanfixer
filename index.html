@@ -21,8 +21,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&family=Noto+Serif+JP:wght@700&family=Noto+Serif+TC:wght@700&family=Playfair+Display:wght@700;900&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&family=Noto+Serif+JP:wght@700&family=Noto+Serif+TC:wght@700&family=Playfair+Display:wght@700;900&display=swap"></noscript>
-<link rel="stylesheet" href="style.css?v=16">
-<script>/* 上次選日文、或手機設定為日文的訪客，一打開就顯示日文 */try{var l=localStorage.getItem('mark-lang')||((navigator.language||'').toLowerCase().indexOf('ja')===0?'ja':'zh');if(l==='ja'){document.documentElement.dataset.lang='ja';document.documentElement.lang='ja';}}catch(e){}</script>
+<link rel="stylesheet" href="style.css?v=19">
+<script>/* 記住的語言，否則依瀏覽器語言清單裡第一個日文或中文；都沒有才用英文 */try{var L=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'']),l=localStorage.getItem('mark-lang');if(!l){l='en';for(var i=0;i<L.length;i++){var x=(L[i]||'').toLowerCase();if(x.indexOf('ja')===0){l='ja';break;}if(x.indexOf('zh')===0){l='zh';break;}}}if(l==='ja'||l==='en'){document.documentElement.dataset.lang=l;document.documentElement.lang=l;}}catch(e){}</script>
 </head>
 <body>
 
@@ -35,11 +35,17 @@
       <a href="#service">Service</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
-      <button type="button" class="lang" id="langBtn" data-lang-toggle>
-        <span data-l="zh">日本語</span><span data-l="ja">中文</span>
-      </button>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-set-lang="zh" lang="zh-Hant" aria-pressed="true">中文</button>
+        <button type="button" data-set-lang="ja" lang="ja" aria-pressed="false">日本語</button>
+        <button type="button" data-set-lang="en" lang="en" aria-pressed="false">EN</button>
+      </div>
     </nav>
-    <button type="button" class="lang lang-mobile" data-lang-toggle><span data-l="zh">日本語</span><span data-l="ja">中文</span></button>
+    <div class="lang-switch lang-switch--m" role="group" aria-label="Language">
+      <button type="button" data-set-lang="zh" lang="zh-Hant" aria-pressed="true">中文</button>
+      <button type="button" data-set-lang="ja" lang="ja" aria-pressed="false">日本語</button>
+      <button type="button" data-set-lang="en" lang="en" aria-pressed="false">EN</button>
+    </div>
     <button type="button" class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteNav">Menu</button>
   </div>
 </header>
@@ -51,7 +57,7 @@
   <h1>MARK</h1>
   <p class="hero-sub">
     <span data-l="zh">旅居日本 20 年的 Fixer。<br>把海外團隊的企劃，變成在日本拍得成的現場。</span>
-    <span data-l="ja" class="keep">在日20年の<wbr>フィクサー。<br>海外チームの<wbr>企画を、<wbr>日本で<wbr>撮れる現場に<wbr>変える。</span>
+    <span data-l="ja" class="keep">在日20年の<wbr>フィクサー。<br>海外チームの<wbr>企画を、<wbr>日本で<wbr>撮れる現場に<wbr>変える。</span><span data-l="en">A fixer who has lived in Japan for 20 years. <br>I help overseas crews turn their plans into shoots that work here.</span>
   </p>
 </section>
 
@@ -62,11 +68,11 @@
     <!-- 作品分類：只顯示有作品的類型；少於兩類時整排隱藏 -->
     <div class="filter reveal" id="workFilter" role="group" aria-label="依類型篩選作品" hidden>
       <div class="filter-in">
-          <button type="button" class="filter-btn" data-filter="all" aria-pressed="true" aria-controls="workList"><span data-l="zh">全部</span><span data-l="ja">すべて</span></button>
-          <button type="button" class="filter-btn" data-filter="documentary" aria-pressed="false" aria-controls="workList"><span data-l="zh">紀錄片</span><span data-l="ja">ドキュメンタリー</span></button>
-          <button type="button" class="filter-btn" data-filter="tv" aria-pressed="false" aria-controls="workList"><span data-l="zh">電視節目</span><span data-l="ja">テレビ番組</span></button>
-          <button type="button" class="filter-btn" data-filter="brand" aria-pressed="false" aria-controls="workList"><span data-l="zh">廣告・品牌</span><span data-l="ja">広告・ブランド</span></button>
-          <button type="button" class="filter-btn" data-filter="news" aria-pressed="false" aria-controls="workList"><span data-l="zh">新聞・專題</span><span data-l="ja">ニュース・特集</span></button>
+          <button type="button" class="filter-btn" data-filter="all" aria-pressed="true" aria-controls="workList"><span data-l="zh">全部</span><span data-l="ja">すべて</span><span data-l="en">All</span></button>
+          <button type="button" class="filter-btn" data-filter="documentary" aria-pressed="false" aria-controls="workList"><span data-l="zh">紀錄片</span><span data-l="ja">ドキュメンタリー</span><span data-l="en">Documentary</span></button>
+          <button type="button" class="filter-btn" data-filter="tv" aria-pressed="false" aria-controls="workList"><span data-l="zh">電視節目</span><span data-l="ja">テレビ番組</span><span data-l="en">TV</span></button>
+          <button type="button" class="filter-btn" data-filter="brand" aria-pressed="false" aria-controls="workList"><span data-l="zh">廣告・品牌</span><span data-l="ja">広告・ブランド</span><span data-l="en">Brand &amp; Commercial</span></button>
+          <button type="button" class="filter-btn" data-filter="news" aria-pressed="false" aria-controls="workList"><span data-l="zh">新聞・專題</span><span data-l="ja">ニュース・特集</span><span data-l="en">News &amp; Features</span></button>
       </div>
     </div>
     <p class="sr-only" id="filterStatus" role="status"></p>
@@ -79,21 +85,21 @@
       <div>
         <h2 class="p-title">
           <span data-l="zh">醫療先鋒：再生醫學</span>
-          <span data-l="ja">醫療先鋒：再生醫學</span>
+          <span data-l="ja">醫療先鋒：再生醫學</span><span data-l="en">Medical Elite: Regenerative Medicine</span>
         </h2>
-        <p class="p-cap">Discovery (2024)　<span data-l="zh">醫療紀錄片</span><span data-l="ja">医療ドキュメンタリー</span></p>
+        <p class="p-cap">Discovery (2024)　<span data-l="zh">醫療紀錄片</span><span data-l="ja">医療ドキュメンタリー</span><span data-l="en">Medical documentary</span></p>
         <p class="p-award"><a href="#awards">New York Festivals TV &amp; Film Awards 2026　Finalist</a></p>
       </div>
       <p class="p-desc">
         <span data-l="zh">Discovery 頻道醫療紀錄片的拍攝協調。帶著攝影團隊走進再生醫學的研究室、無塵室與醫療現場。</span>
-        <span data-l="ja">Discovery チャンネルの医療ドキュメンタリーで撮影コーディネートを担当。再生医療の研究室、クリーンルーム、医療の現場へ撮影チームをご案内しました。</span>
-        <button type="button" class="p-video" data-youtube="JxVk7_Kpvt0">▶ <span data-l="zh">觀看完整節目（44 分鐘）</span><span data-l="ja">番組本編を見る（44分）</span></button>
+        <span data-l="ja">Discovery チャンネルの医療ドキュメンタリーで撮影コーディネートを担当。再生医療の研究室、クリーンルーム、医療の現場へ撮影チームをご案内しました。</span><span data-l="en">Shoot coordination for a Discovery Channel medical documentary, taking the crew into regenerative-medicine labs, cleanrooms and clinics.</span>
+        <button type="button" class="p-video" data-youtube="JxVk7_Kpvt0">▶ <span data-l="zh">觀看完整節目（44 分鐘）</span><span data-l="ja">番組本編を見る（44分）</span><span data-l="en">Watch the full episode (44 min)</span></button>
       </p>
       <div class="p-role">
-        <p class="p-role-label"><span data-l="zh">MARK 負責的工作</span><span data-l="ja">MARK の担当業務</span></p>
+        <p class="p-role-label"><span data-l="zh">MARK 負責的工作</span><span data-l="ja">MARK の担当業務</span><span data-l="en">MARK’s role</span></p>
         <p>
           <span data-l="zh">醫療・研究機構採訪交涉<br>拍攝許可申請<br>現場口譯（中⇄日）<br>行程與拍攝統籌</span>
-          <span data-l="ja">医療・研究機関への取材交渉<br>撮影許可申請<br>現場通訳（中⇄日）<br>スケジュール・制作進行</span>
+          <span data-l="ja">医療・研究機関への取材交渉<br>撮影許可申請<br>現場通訳（中⇄日）<br>スケジュール・制作進行</span><span data-l="en">Access to hospitals and research labs<br>Filming permits<br>On-site interpreting (Chinese ⇄ Japanese)<br>Scheduling and shoot coordination</span>
         </p>
       </div>
     </header>
@@ -114,19 +120,19 @@
       <div>
         <h2 class="p-title">
           <span data-l="zh">在世界的角落紮營</span>
-          <span data-l="ja">在世界的角落紮營</span>
+          <span data-l="ja">在世界的角落紮營</span><span data-l="en">Camping in the Corners of the World</span>
         </h2>
-        <p class="p-cap">Mediacorp (2026)　<span data-l="zh">電視節目・戶外旅遊</span><span data-l="ja">テレビ番組・アウトドア紀行</span></p>
+        <p class="p-cap">Mediacorp (2026)　<span data-l="zh">電視節目・戶外旅遊</span><span data-l="ja">テレビ番組・アウトドア紀行</span><span data-l="en">TV programme · Outdoor travel</span></p>
       </div>
       <p class="p-desc">
         <span data-l="zh">新加坡 Mediacorp 戶外節目的日本拍攝。稻田、起霧的山林、夜裡的營地、在地職人的工作場，把團隊帶到觀光客到不了的角落。</span>
-        <span data-l="ja">シンガポール Mediacorp のアウトドア番組・日本ロケ。田んぼ、霧の山あい、夜のキャンプ地、職人の仕事場。観光では辿り着けない場所へチームをお連れしました。</span>
+        <span data-l="ja">シンガポール Mediacorp のアウトドア番組・日本ロケ。田んぼ、霧の山あい、夜のキャンプ地、職人の仕事場。観光では辿り着けない場所へチームをお連れしました。</span><span data-l="en">Japan shoot for an outdoor series from Singapore’s Mediacorp. Rice fields, misty mountain forests, night-time campsites and local craftspeople at work: places tourists never reach.</span>
       </p>
       <div class="p-role">
-        <p class="p-role-label"><span data-l="zh">MARK 負責的工作</span><span data-l="ja">MARK の担当業務</span></p>
+        <p class="p-role-label"><span data-l="zh">MARK 負責的工作</span><span data-l="ja">MARK の担当業務</span><span data-l="en">MARK’s role</span></p>
         <p>
           <span data-l="zh">勘景與場地交涉<br>在地居民・店家協調<br>現場口譯（中⇄日）<br>交通・住宿安排</span>
-          <span data-l="ja">ロケハン・ロケ地交渉<br>地域の方・店舗との調整<br>現場通訳（中⇄日）<br>移動・宿泊手配</span>
+          <span data-l="ja">ロケハン・ロケ地交渉<br>地域の方・店舗との調整<br>現場通訳（中⇄日）<br>移動・宿泊手配</span><span data-l="en">Location scouting and negotiation<br>Liaison with residents and local businesses<br>On-site interpreting (Chinese ⇄ Japanese)<br>Transport and accommodation</span>
         </p>
       </div>
     </header>
@@ -147,19 +153,19 @@
       <div>
         <h2 class="p-title">
           <span data-l="zh">furrmacy 阿聯酋宣傳影片</span>
-          <span data-l="ja" class="keep">furrmacy UAE <wbr>プロモーション映像</span>
+          <span data-l="ja" class="keep">furrmacy UAE <wbr>プロモーション映像</span><span data-l="en">furrmacy UAE Promotional Film</span>
         </h2>
-        <p class="p-cap">furrmacy (2026)　<span data-l="zh">品牌宣傳影片</span><span data-l="ja">ブランドプロモーション映像</span></p>
+        <p class="p-cap">furrmacy (2026)　<span data-l="zh">品牌宣傳影片</span><span data-l="ja">ブランドプロモーション映像</span><span data-l="en">Brand promotional film</span></p>
       </div>
       <p class="p-desc">
         <span data-l="zh">品牌 furrmacy 阿聯酋宣傳影片的日本拍攝。進入製藥工廠的無塵製造現場拍攝，並完成研發與醫學負責人的訪談。</span>
-        <span data-l="ja">ブランド furrmacy の UAE 向けプロモーション映像・日本ロケ。製薬工場のクリーンルームでの撮影と、研究開発・メディカル担当者へのインタビューを行いました。</span>
+        <span data-l="ja">ブランド furrmacy の UAE 向けプロモーション映像・日本ロケ。製薬工場のクリーンルームでの撮影と、研究開発・メディカル担当者へのインタビューを行いました。</span><span data-l="en">Japan shoot for furrmacy’s promotional film for the UAE: filming in a pharmaceutical plant’s cleanroom, plus interviews with its R&amp;D and medical leads.</span>
       </p>
       <div class="p-role">
-        <p class="p-role-label"><span data-l="zh">MARK 負責的工作</span><span data-l="ja">MARK の担当業務</span></p>
+        <p class="p-role-label"><span data-l="zh">MARK 負責的工作</span><span data-l="ja">MARK の担当業務</span><span data-l="en">MARK’s role</span></p>
         <p>
           <span data-l="zh">工廠拍攝交涉<br>訪談安排<br>現場口譯（中⇄日）<br>拍攝統籌</span>
-          <span data-l="ja">工場での撮影交渉<br>インタビュー調整<br>現場通訳（中⇄日）<br>制作進行</span>
+          <span data-l="ja">工場での撮影交渉<br>インタビュー調整<br>現場通訳（中⇄日）<br>制作進行</span><span data-l="en">Negotiating access to the factory<br>Interview setup<br>On-site interpreting (Chinese ⇄ Japanese)<br>Shoot coordination</span>
         </p>
       </div>
     </header>
@@ -185,7 +191,7 @@
       <p class="award-name">New York Festivals<br>TV &amp; Film Awards</p>
       <div class="award-result">
         <b>2026　Finalist Diploma</b>
-        <p><span data-l="zh">紐約電視電影節　紀錄片類・決選入圍</span><span data-l="ja">ニューヨーク・フェスティバル　ドキュメンタリー部門・ファイナリスト</span></p>
+        <p><span data-l="zh">紐約電視電影節　紀錄片類・決選入圍</span><span data-l="ja">ニューヨーク・フェスティバル　ドキュメンタリー部門・ファイナリスト</span><span data-l="en">New York Festivals · Documentary · Finalist</span></p>
       </div>
       <div class="award-work">
         <p><span data-l="zh">《醫療先鋒：再生醫學》</span><span data-l="ja">『醫療先鋒：再生醫學』</span></p>
@@ -200,32 +206,32 @@
   <h2 class="sec-title reveal">Service</h2>
   <p class="sec-sub reveal">
     <span data-l="zh">你負責把故事拍好，在日本會遇到的事交給我。</span>
-    <span data-l="ja">良い作品づくりに集中していただけるよう、日本で起こるあれこれを引き受けます。</span>
+    <span data-l="ja">良い作品づくりに集中していただけるよう、日本で起こるあれこれを引き受けます。</span><span data-l="en">You focus on the story. I’ll take care of everything on the Japan side.</span>
   </p>
   <div class="grid text-grid">
     <div class="item reveal">
-      <h3><span data-l="zh">勘景與拍攝許可</span><span data-l="ja">ロケハン・撮影許可</span></h3>
-      <p><span data-l="zh">找到對的場景，向地方政府、設施與業主完成申請。</span><span data-l="ja">最適なロケ地を探し、自治体・施設・所有者への申請まで対応します。</span></p>
+      <h3><span data-l="zh">勘景與拍攝許可</span><span data-l="ja">ロケハン・撮影許可</span><span data-l="en">Location scouting and permits</span></h3>
+      <p><span data-l="zh">找到對的場景，向地方政府、設施與業主完成申請。</span><span data-l="ja">最適なロケ地を探し、自治体・施設・所有者への申請まで対応します。</span><span data-l="en">Finding the right locations and handling permit applications with local authorities, venues and property owners.</span></p>
     </div>
     <div class="item reveal">
-      <h3><span data-l="zh">採訪交涉與邀約</span><span data-l="ja">取材交渉・アポイント</span></h3>
-      <p><span data-l="zh">醫療機構、研究單位、企業、職人、在地居民。用對方習慣的方式說明來意，先把信任建立起來。</span><span data-l="ja">医療機関、研究機関、企業、職人、地域の方々。相手に合わせた伝え方で趣旨を説明し、まず信頼を築きます。</span></p>
+      <h3><span data-l="zh">採訪交涉與邀約</span><span data-l="ja">取材交渉・アポイント</span><span data-l="en">Access and interview arrangements</span></h3>
+      <p><span data-l="zh">醫療機構、研究單位、企業、職人、在地居民。用對方習慣的方式說明來意，先把信任建立起來。</span><span data-l="ja">医療機関、研究機関、企業、職人、地域の方々。相手に合わせた伝え方で趣旨を説明し、まず信頼を築きます。</span><span data-l="en">Hospitals, research labs, companies, craftspeople, local residents. I explain your project in a way that makes sense to them, and build trust before anything else.</span></p>
     </div>
     <div class="item reveal">
-      <h3><span data-l="zh">現場口譯</span><span data-l="ja">現場通訳</span></h3>
-      <p><span data-l="zh">中文 ⇄ 日文。不只翻字面，也把導演的意圖和受訪者的語氣傳到位。</span><span data-l="ja">中国語 ⇄ 日本語。言葉だけでなく、監督の意図や取材相手のニュアンスまで届けます。</span></p>
+      <h3><span data-l="zh">現場口譯</span><span data-l="ja">現場通訳</span><span data-l="en">On-site interpreting</span></h3>
+      <p><span data-l="zh">中文 ⇄ 日文。不只翻字面，也把導演的意圖和受訪者的語氣傳到位。</span><span data-l="ja">中国語 ⇄ 日本語。言葉だけでなく、監督の意図や取材相手のニュアンスまで届けます。</span><span data-l="en">Chinese ⇄ Japanese. Not just the words, but the director’s intent and the interviewee’s tone.</span></p>
     </div>
     <div class="item reveal">
-      <h3><span data-l="zh">製作統籌</span><span data-l="ja">制作進行・手配</span></h3>
-      <p><span data-l="zh">行程、交通、住宿、餐飲、器材租借、在地工作人員，一次安排好。</span><span data-l="ja">スケジュール、移動、宿泊、食事、機材レンタル、現地スタッフをまとめて手配します。</span></p>
+      <h3><span data-l="zh">製作統籌</span><span data-l="ja">制作進行・手配</span><span data-l="en">Production coordination</span></h3>
+      <p><span data-l="zh">行程、交通、住宿、餐飲、器材租借、在地工作人員，一次安排好。</span><span data-l="ja">スケジュール、移動、宿泊、食事、機材レンタル、現地スタッフをまとめて手配します。</span><span data-l="en">Schedules, transport, accommodation, meals, equipment rental and local crew, all arranged in one go.</span></p>
     </div>
     <div class="item reveal">
-      <h3><span data-l="zh">前期調查</span><span data-l="ja">事前リサーチ</span></h3>
-      <p><span data-l="zh">題材調查、人物與故事線索蒐集、可行性評估，讓企劃在出發前就站得住腳。</span><span data-l="ja">テーマの調査、人物やストーリーの発掘、実現可能性の確認。出発前に企画の足場を固めます。</span></p>
+      <h3><span data-l="zh">前期調查</span><span data-l="ja">事前リサーチ</span><span data-l="en">Pre-production research</span></h3>
+      <p><span data-l="zh">題材調查、人物與故事線索蒐集、可行性評估，讓企劃在出發前就站得住腳。</span><span data-l="ja">テーマの調査、人物やストーリーの発掘、実現可能性の確認。出発前に企画の足場を固めます。</span><span data-l="en">Topic research, finding people and story leads, and feasibility checks, so the project is on solid ground before you fly.</span></p>
     </div>
     <div class="item reveal">
-      <h3><span data-l="zh">文化溝通與現場應變</span><span data-l="ja">文化面のサポート・現場対応</span></h3>
-      <p><span data-l="zh">天氣、臨時變更、突發狀況。現場有人懂日本的規矩，問題就先小了一半。</span><span data-l="ja">天候、急な変更、想定外の出来事。日本の作法を知る人間が現場にいれば、問題は半分になります。</span></p>
+      <h3><span data-l="zh">文化溝通與現場應變</span><span data-l="ja">文化面のサポート・現場対応</span><span data-l="en">Cultural navigation and problem solving</span></h3>
+      <p><span data-l="zh">天氣、臨時變更、突發狀況。現場有人懂日本的規矩，問題就先小了一半。</span><span data-l="ja">天候、急な変更、想定外の出来事。日本の作法を知る人間が現場にいれば、問題は半分になります。</span><span data-l="en">Weather, last-minute changes, the unexpected. When someone on set knows how things work in Japan, half the problem is already solved.</span></p>
     </div>
   </div>
 </section>
@@ -238,10 +244,10 @@
       <p class="about-name">MARK</p>
       <p class="about-role">JAPAN FIXER</p>
       <dl class="facts">
-        <div><dt><span data-l="zh">據點</span><span data-l="ja">拠点</span></dt><dd><span data-l="zh">日本</span><span data-l="ja">日本</span></dd></div>
-        <div><dt><span data-l="zh">語言</span><span data-l="ja">言語</span></dt><dd><span data-l="zh">中文・日文</span><span data-l="ja">中国語・日本語</span></dd></div>
-        <div><dt><span data-l="zh">經歷</span><span data-l="ja">経歴</span></dt><dd><span data-l="zh">旅居日本 20 年</span><span data-l="ja">在日20年</span></dd></div>
-        <div><dt><span data-l="zh">合作</span><span data-l="ja">実績</span></dt><dd>Discovery<br>Mediacorp<br>furrmacy</dd></div>
+        <div><dt><span data-l="zh">據點</span><span data-l="ja">拠点</span><span data-l="en">Base</span></dt><dd><span data-l="zh">日本</span><span data-l="ja">日本</span><span data-l="en">Japan</span></dd></div>
+        <div><dt><span data-l="zh">語言</span><span data-l="ja">言語</span><span data-l="en">Languages</span></dt><dd><span data-l="zh">中文・日文</span><span data-l="ja">中国語・日本語</span><span data-l="en">Chinese, Japanese</span></dd></div>
+        <div><dt><span data-l="zh">經歷</span><span data-l="ja">経歴</span><span data-l="en">Experience</span></dt><dd><span data-l="zh">旅居日本 20 年</span><span data-l="ja">在日20年</span><span data-l="en">20 years in Japan</span></dd></div>
+        <div><dt><span data-l="zh">合作</span><span data-l="ja">実績</span><span data-l="en">Clients</span></dt><dd>Discovery<br>Mediacorp<br>furrmacy</dd></div>
       </dl>
     </aside>
 
@@ -270,6 +276,17 @@
         <p>撮影の現場では、予定どおりにいかないことのほうが多いものです。天気が変わる、時間が押す、急に場所が使えなくなる。</p>
         <p>そんな時に慌てず、すぐ次の手を考えられること。それが私の強みです。計画どおりにいかなくなった時が、私の出番です。</p>
       </div>
+      <div data-l="en">
+        <h3>Hi, I’m Mark.<br>I’ve been in Japan for 20 years.</h3>
+        <p>When I arrived, I couldn’t read a single kana. Looking back, I’m not sure whether that was courage or just not knowing what I was getting into.</p>
+        <p>I didn’t go to film school. But after this long in Japan, I know better than most how people here work together: what you can’t say outright, and the rules nobody tells you about.</p>
+        <p class="quote">Plenty of people speak good Japanese. Far fewer understand how Japan really works.</p>
+        <p>That second part is what this job is really about.</p>
+        <p>In 2024 I worked with Discovery on the medical documentary <i>Medical Elite: Regenerative Medicine</i>. To be honest, that was the first time I’d heard the word “fixer.” By the end of the shoot, the director joked that I’d make a good assistant director.</p>
+        <p>I love seeing something through with a crew. Every wrap is a little sad, though: I catch myself thinking I may never see these people again. That’s why every project matters to me.</p>
+        <p>On a shoot, things rarely go to plan. The weather turns, the schedule slips, a location suddenly falls through.</p>
+        <p>Staying calm and having the next option ready is what I’m good at. When the plan stops working, that’s when I step in.</p>
+      </div>
     </article>
   </div>
 </section>
@@ -279,36 +296,36 @@
   <div class="info">
     <p>Japan</p>
     <p><a id="mailLink" href="#"></a></p>
-    <p><span data-l="zh">中文・日文皆可來信</span><span data-l="ja">中国語・日本語どちらでも</span></p>
+    <p><span data-l="zh">中文・日文皆可來信</span><span data-l="ja">中国語・日本語どちらでも</span><span data-l="en">I read and reply in Chinese and Japanese</span></p>
     <ul class="social" id="social" aria-label="Social"></ul>
   </div>
 
   <form class="form" id="contactForm" novalidate>
-    <label for="f-name"><span data-l="zh">姓名／公司</span><span data-l="ja">お名前／会社名</span> <b>*</b></label>
-    <input id="f-name" aria-describedby="formError" name="name" type="text" required autocomplete="name" enterkeyhint="next" data-ph-zh="您的姓名" data-ph-ja="お名前">
+    <label for="f-name"><span data-l="zh">姓名／公司</span><span data-l="ja">お名前／会社名</span><span data-l="en">Name / Company</span> <b>*</b></label>
+    <input id="f-name" aria-describedby="formError" name="name" type="text" required autocomplete="name" enterkeyhint="next" data-ph-zh="您的姓名" data-ph-ja="お名前" data-ph-en="Your name">
 
     <label for="f-email">Email <b>*</b></label>
     <input id="f-email" aria-describedby="formError" name="email" type="email" required autocomplete="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" placeholder="Email Address">
 
-    <label for="f-msg"><span data-l="zh">訊息</span><span data-l="ja">メッセージ</span> <b>*</b></label>
-    <textarea id="f-msg" aria-describedby="formError" name="message" required data-ph-zh="想拍的內容、預計時間、地點等" data-ph-ja="撮影内容、時期、場所など"></textarea>
+    <label for="f-msg"><span data-l="zh">訊息</span><span data-l="ja">メッセージ</span><span data-l="en">Message</span> <b>*</b></label>
+    <textarea id="f-msg" aria-describedby="formError" name="message" required data-ph-zh="想拍的內容、預計時間、地點等" data-ph-ja="撮影内容、時期、場所など" data-ph-en="What you’d like to film, dates, locations, etc."></textarea>
 
     <p class="form-error" id="formError" role="alert" hidden>
       <span data-l="zh">請填寫標有 * 的欄位，並確認 Email 格式。</span>
-      <span data-l="ja">* の項目をご入力のうえ、メールアドレスの形式をご確認ください。</span>
+      <span data-l="ja">* の項目をご入力のうえ、メールアドレスの形式をご確認ください。</span><span data-l="en">Please fill in the fields marked * and check your email address.</span>
     </p>
     <div class="send-row">
-      <a class="send send-primary" id="sendGmail" href="#" target="_blank" rel="noopener"><span data-l="zh">用 Gmail 寄出</span><span data-l="ja">Gmail で送信</span></a>
-      <a class="send" href="https://ig.me/m/hsiu.n.t" target="_blank" rel="noopener"><span data-l="zh">用 Instagram 聯絡我</span><span data-l="ja">Instagram で連絡する</span></a>
+      <a class="send send-primary" id="sendGmail" href="#" target="_blank" rel="noopener"><span data-l="zh">用 Gmail 寄出</span><span data-l="ja">Gmail で送信</span><span data-l="en">Send via Gmail</span></a>
+      <a class="send" href="https://ig.me/m/hsiu.n.t" target="_blank" rel="noopener"><span data-l="zh">用 Instagram 聯絡我</span><span data-l="ja">Instagram で連絡する</span><span data-l="en">Contact me on Instagram</span></a>
     </div>
     <p class="form-hint">
       <span data-l="zh">按「用 Gmail 寄出」會打開寄信畫面，填好的內容已自動帶入，確認後按「傳送」就完成了。</span>
-      <span data-l="ja">「Gmail で送信」を押すとメールの作成画面が開き、入力内容が自動で入ります。確認して「送信」を押せば完了です。</span>
+      <span data-l="ja">「Gmail で送信」を押すとメールの作成画面が開き、入力内容が自動で入ります。確認して「送信」を押せば完了です。</span><span data-l="en">“Send via Gmail” opens a new email with your details already filled in. Check it and press Send.</span>
     </p>
     <p class="form-alt">
-      <span data-l="zh">也可以直接寄信到</span><span data-l="ja">直接メールする場合：</span>
+      <span data-l="zh">也可以直接寄信到</span><span data-l="ja">直接メールする場合：</span><span data-l="en">Or email me directly at</span>
       <b class="mail-text"></b>
-      <button type="button" class="copy-mail"><span data-l="zh">複製</span><span data-l="ja">コピー</span></button>
+      <button type="button" class="copy-mail"><span data-l="zh">複製</span><span data-l="ja">コピー</span><span data-l="en">Copy</span></button>
       <span class="sr-only" id="copyStatus" role="status"></span>
     </p>
   </form>
@@ -323,7 +340,7 @@
 <!-- 手機版：右下角的聯絡按鈕 -->
 <a href="#contact" class="fab" id="fab" aria-label="聯絡我">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.4 7.6L3.5 20.5l1.4-4.4A8.5 8.5 0 1 1 20.5 11.5z"/></svg>
-  <span class="fab-text" aria-hidden="true"><span data-l="zh">聯絡</span><span data-l="ja">連絡</span></span>
+  <span class="fab-text" aria-hidden="true"><span data-l="zh">聯絡</span><span data-l="ja">連絡</span><span data-l="en">Contact</span></span>
 </a>
 
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="放大檢視照片" aria-hidden="true">
@@ -335,6 +352,6 @@
   <div class="lb-video"></div>
 </div>
 
-<script src="main.js?v=17"></script>
+<script src="main.js?v=19"></script>
 </body>
 </html>

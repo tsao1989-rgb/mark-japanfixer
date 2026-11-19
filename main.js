@@ -28,17 +28,21 @@ const ICONS = {
   const TITLES = {
     zh: 'MARK — Japan Fixer｜日本在地製片協調',
     ja: 'MARK — Japan Fixer｜海外メディア撮影コーディネーター',
+    en: 'MARK — Japan Fixer | Production coordination in Japan',
   };
   function setLang(lang) {
-    if (lang !== 'zh' && lang !== 'ja') lang = 'zh';
+    if (lang !== 'zh' && lang !== 'ja' && lang !== 'en') lang = 'zh';
     root.dataset.lang = lang;
-    root.lang = lang === 'ja' ? 'ja' : 'zh-Hant';
+    root.lang = { zh: 'zh-Hant', ja: 'ja', en: 'en' }[lang];
     document.title = TITLES[lang];
     const fabEl = document.getElementById('fab');
-    if (fabEl) fabEl.setAttribute('aria-label', lang === 'ja' ? 'お問い合わせ' : '聯絡我');
-    const L = lang === 'ja'
-      ? { close: '閉じる', prev: '前の写真', next: '次の写真', dialog: '写真を拡大表示' }
-      : { close: '關閉', prev: '上一張', next: '下一張', dialog: '放大檢視照片' };
+    if (fabEl) fabEl.setAttribute('aria-label', { zh: '聯絡我', ja: 'お問い合わせ', en: 'Contact' }[lang]);
+    document.querySelectorAll('[data-set-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.setLang === lang)));
+    const L = {
+      zh: { close: '關閉', prev: '上一張', next: '下一張', dialog: '放大檢視照片' },
+      ja: { close: '閉じる', prev: '前の写真', next: '次の写真', dialog: '写真を拡大表示' },
+      en: { close: 'Close', prev: 'Previous photo', next: 'Next photo', dialog: 'Photo viewer' },
+    }[lang];
     const lbEl = document.getElementById('lightbox');
     if (lbEl) {
       lbEl.setAttribute('aria-label', L.dialog);
@@ -47,20 +51,24 @@ const ICONS = {
       lbEl.querySelector('.lb-next').setAttribute('aria-label', L.next);
     }
     const wf = document.getElementById('workFilter');
-    if (wf) wf.setAttribute('aria-label', lang === 'ja' ? 'ジャンルで作品を絞り込む' : '依類型篩選作品');
+    if (wf) wf.setAttribute('aria-label', { zh: '依類型篩選作品', ja: 'ジャンルで作品を絞り込む', en: 'Filter work by genre' }[lang]);
     document.querySelectorAll('[data-ph-zh]').forEach((el) => {
-      el.placeholder = el.dataset[lang === 'ja' ? 'phJa' : 'phZh'];
+      el.placeholder = el.dataset[{ zh: 'phZh', ja: 'phJa', en: 'phEn' }[lang]] || el.dataset.phZh;
     });
     try { localStorage.setItem('mark-lang', lang); } catch (e) {}
   }
-  document.querySelectorAll('[data-lang-toggle]').forEach((b) => b.addEventListener('click', () => {
-    setLang(root.dataset.lang === 'ja' ? 'zh' : 'ja');
+  document.querySelectorAll('[data-set-lang]').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.setLang === root.dataset.lang) return;
+    setLang(b.dataset.setLang);
     compose();
     refreshFilter();
   }));
   let saved = null;
   try { saved = localStorage.getItem('mark-lang'); } catch (e) {}
-  setLang(saved || ((navigator.language || '').toLowerCase().indexOf('ja') === 0 ? 'ja' : 'zh'));
+  // 瀏覽器語言清單裡第一個日文或中文；都沒有才用英文（新加坡、馬來西亞的華語客戶常把英文放第一）
+  const browserLangs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']).map((x) => (x || '').toLowerCase());
+  const firstCJK = browserLangs.find((x) => x.indexOf('ja') === 0 || x.indexOf('zh') === 0);
+  setLang(saved || (firstCJK ? firstCJK.slice(0, 2) : 'en'));
 
   /* 疊層打開時，讓背後的內容暫時無法被鍵盤或螢幕閱讀器操作 */
   function setInert(els, on) {
@@ -228,13 +236,16 @@ const ICONS = {
     updateFades();
   }
   function announce(cat) {
-    const ja = root.dataset.lang === 'ja';
+    const lang = root.dataset.lang;
     const btn = pressedBtn();
-    const label = btn ? btn.querySelector('[data-l="' + (ja ? 'ja' : 'zh') + '"]').textContent : '';
+    const label = btn ? btn.querySelector('[data-l="' + lang + '"]').textContent : '';
     const n = countOf(cat);
-    fStatus.textContent = cat === 'all'
-      ? (ja ? 'すべての作品：' + n + '件' : '全部作品：' + n + ' 件')
-      : (ja ? label + '：' + n + '件の作品' : label + '：' + n + ' 件作品');
+    const msg = {
+      zh: cat === 'all' ? '全部作品：' + n + ' 件' : label + '：' + n + ' 件作品',
+      ja: cat === 'all' ? 'すべての作品：' + n + '件' : label + '：' + n + '件の作品',
+      en: (cat === 'all' ? 'All work' : label) + ': ' + n + (n === 1 ? ' project' : ' projects'),
+    };
+    fStatus.textContent = msg[lang] || msg.zh;
   }
   function applyFilter(cat, opts) {
     opts = opts || {};
@@ -484,11 +495,11 @@ const ICONS = {
   const f = form.elements;
 
   function compose() {
-    const ja = root.dataset.lang === 'ja';
+    const lang = root.dataset.lang;
     const name = f.name.value.trim();
-    const subject = (ja ? '【撮影のご相談】' : '【拍攝詢問】') + name;
+    const subject = ({ zh: '【拍攝詢問】', ja: '【撮影のご相談】', en: '[Filming inquiry] ' }[lang] || '【拍攝詢問】') + name;
     const body = [
-      (ja ? 'お名前／会社名：' : '姓名／公司：') + name,
+      ({ zh: '姓名／公司：', ja: 'お名前／会社名：', en: 'Name / Company: ' }[lang] || '姓名／公司：') + name,
       'Email：' + f.email.value.trim(),
       '',
       f.message.value.trim(),
@@ -543,7 +554,7 @@ const ICONS = {
     btn.addEventListener('click', () => {
       const done = () => {
         const st = document.getElementById('copyStatus');
-        if (st) st.textContent = root.dataset.lang === 'ja' ? 'コピーしました' : '已複製';
+        if (st) st.textContent = { zh: '已複製', ja: 'コピーしました', en: 'Copied' }[root.dataset.lang] || '已複製';
         btn.classList.add('copied');
         setTimeout(() => btn.classList.remove('copied'), 2000);
       };
