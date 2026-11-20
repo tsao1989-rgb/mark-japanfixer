@@ -551,6 +551,11 @@ const ICONS = {
   });
   compose();
 
+  // ig.me 私訊連結只在手機／平板（有 Instagram App）打得開；電腦版維持個人頁，頁面上有「傳送訊息」
+  const igDm = document.getElementById('igDm');
+  const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  if (igDm && isMobileDevice) igDm.href = igDm.dataset.appHref;
+
   /* ---------- 複製 Email 地址 ---------- */
   document.querySelectorAll('.mail-text').forEach((el) => { el.textContent = CONTACT.email; });
   document.querySelectorAll('.copy-mail').forEach((btn) => {
