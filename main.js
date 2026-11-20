@@ -55,6 +55,9 @@ const ICONS = {
     document.querySelectorAll('[data-ph-zh]').forEach((el) => {
       el.placeholder = el.dataset[{ zh: 'phZh', ja: 'phJa', en: 'phEn' }[lang]] || el.dataset.phZh;
     });
+    document.querySelectorAll('[data-alt-zh]').forEach((el) => {
+      el.alt = el.dataset[{ zh: 'altZh', ja: 'altJa', en: 'altEn' }[lang]] || el.dataset.altZh;
+    });
     try { localStorage.setItem('mark-lang', lang); } catch (e) {}
   }
   document.querySelectorAll('[data-set-lang]').forEach((b) => b.addEventListener('click', () => {
@@ -145,7 +148,7 @@ const ICONS = {
 
   /* ---------- 作品照片：下載完成才淡入，不會一格一格跳出來 ---------- */
   root.classList.add('js');   // 放在這裡：前面任何一段出錯，內容也不會被隱藏
-  document.querySelectorAll('.cell img').forEach((img) => {
+  document.querySelectorAll('.cell img, .portrait img').forEach((img) => {
     const done = () => img.classList.add('loaded');
     if (img.complete && img.naturalWidth) done();
     else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', done, { once: true }); }
