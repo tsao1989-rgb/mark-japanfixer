@@ -18,4 +18,6 @@
 ## Contact
 - Email: natsumeya.store@gmail.com
 - Instagram: https://www.instagram.com/hsiu.n.t/
-- Website (Chinese / Japanese / English): https://tsao1989-rgb.github.io/mark-japanfixer/
+- Website (Chinese): https://tsao1989-rgb.github.io/mark-japanfixer/
+- Website (Japanese): https://tsao1989-rgb.github.io/mark-japanfixer/ja/
+- Website (English): https://tsao1989-rgb.github.io/mark-japanfixer/en/

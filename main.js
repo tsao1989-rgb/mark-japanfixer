@@ -37,7 +37,6 @@ const ICONS = {
     document.title = TITLES[lang];
     const fabEl = document.getElementById('fab');
     if (fabEl) fabEl.setAttribute('aria-label', { zh: '聯絡我', ja: 'お問い合わせ', en: 'Contact' }[lang]);
-    document.querySelectorAll('[data-set-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.setLang === lang)));
     const L = {
       zh: { close: '關閉', prev: '上一張', next: '下一張', dialog: '放大檢視照片' },
       ja: { close: '閉じる', prev: '前の写真', next: '次の写真', dialog: '写真を拡大表示' },
@@ -58,20 +57,14 @@ const ICONS = {
     document.querySelectorAll('[data-alt-zh]').forEach((el) => {
       el.alt = el.dataset[{ zh: 'altZh', ja: 'altJa', en: 'altEn' }[lang]] || el.dataset.altZh;
     });
-    try { localStorage.setItem('mark-lang', lang); } catch (e) {}
   }
-  document.querySelectorAll('[data-set-lang]').forEach((b) => b.addEventListener('click', () => {
-    if (b.dataset.setLang === root.dataset.lang) return;
-    setLang(b.dataset.setLang);
-    compose();
-    refreshFilter();
+  // 每種語言是獨立網址（/、/ja/、/en/）；切換時記住選擇，並停留在同一個區塊
+  document.querySelectorAll('a[data-set-lang]').forEach((a) => a.addEventListener('click', (e) => {
+    try { localStorage.setItem('mark-lang', a.dataset.setLang); } catch (err) {}
+    if (a.getAttribute('aria-current') === 'page') { e.preventDefault(); return; }
+    if (location.hash) { e.preventDefault(); location.href = a.href.split('#')[0] + location.hash; }
   }));
-  let saved = null;
-  try { saved = localStorage.getItem('mark-lang'); } catch (e) {}
-  // 瀏覽器語言清單裡第一個日文或中文；都沒有才用英文（新加坡、馬來西亞的華語客戶常把英文放第一）
-  const browserLangs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']).map((x) => (x || '').toLowerCase());
-  const firstCJK = browserLangs.find((x) => x.indexOf('ja') === 0 || x.indexOf('zh') === 0);
-  setLang(saved || (firstCJK ? firstCJK.slice(0, 2) : 'en'));
+  setLang(root.dataset.lang);
 
   /* 疊層打開時，讓背後的內容暫時無法被鍵盤或螢幕閱讀器操作 */
   function setInert(els, on) {
