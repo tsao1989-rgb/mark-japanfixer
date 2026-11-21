@@ -26,9 +26,9 @@ const ICONS = {
 
   /* ---------- language ---------- */
   const TITLES = {
-    zh: 'MARK — Japan Fixer｜日本在地製片協調',
-    ja: 'MARK — Japan Fixer｜海外メディア撮影コーディネーター',
-    en: 'MARK — Japan Fixer | Production coordination in Japan',
+    zh: 'MARK — 日本中文 Fixer｜Chinese-speaking Japan Fixer・日本在地製片協調',
+    ja: 'MARK — 中国語ができる日本のフィクサー｜海外メディア撮影コーディネーター',
+    en: 'MARK — Chinese-speaking Japan Fixer | Production coordination in Japan',
   };
   function setLang(lang) {
     if (lang !== 'zh' && lang !== 'ja' && lang !== 'en') lang = 'zh';
@@ -449,7 +449,10 @@ const ICONS = {
     b.addEventListener('click', () => openGallery(b));
   });
   document.querySelectorAll('[data-youtube]').forEach((b) => {
-    b.addEventListener('click', () => openVideo(b.dataset.youtube, b.closest('.project').querySelector('.p-title').innerText.trim()));
+    b.addEventListener('click', (e) => {
+      e.preventDefault();   // 連結留給搜尋引擎與 AI 讀取；點擊時照舊在站內播放
+      openVideo(b.dataset.youtube, b.closest('.project').querySelector('.p-title').innerText.trim());
+    });
   });
   lb.querySelector('.lb-prev').addEventListener('click', () => show(idx - 1, -1));
   lb.querySelector('.lb-next').addEventListener('click', () => show(idx + 1, 1));
